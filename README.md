@@ -19,7 +19,7 @@ Tested on:
 
 * install and configure zabbix-agent
    ```sh
-   dnf instal zabbix-agent
+   dnf install zabbix-agent
    ```
    
 * copy the file "userparameter-libvirt-hv.conf" into your zabbix include folder:
@@ -31,6 +31,13 @@ Tested on:
     ```sh
     cp scripts/*.sh /etc/zabbix
     ```
+* zabbix agent runs as unprivileged zabbis user. Allows sudo this user the virsh command. Create file at /etc/sudoers.d/zabbix:
+    ```sh
+    cat >/etc/sudoers.d/zabbix <EOF
+    Defaults:zabbix !requiretty
+    Defaults:zabbix !syslog
+    zabbix ALL=(ALL) NOPASSWD: /usr/bin/virsh
+    EOF
 
 * reboot zabbix-agent service
     ```sh
