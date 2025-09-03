@@ -21,27 +21,15 @@
             <description>This template should be manually linked to a host.</description>
             <readme>## Overview
 
-This template is designed for the effortless deployment of VMware ESX hypervisor monitoring and doesn't require any external scripts.
+This template is designed for the effortless deployment of KVM hypervisor monitoring using Libvirt.
 
-This template can be used in discovery as well as manually linked to a host.
-
-For additional information, please see [Zabbix documentation on VM monitoring](https://www.zabbix.com/documentation/7.4/manual/vm_monitoring).
-
-To use this template as manually linked to a host, attach it to the host and manually set the `Hypervisor UUID` host wizard configuration field.
-
+Inspired in the Zabbix VMware monitoring templates, uses virsh command to get status and statistics of hypervisor. Both system and user virtual machines are identified in the host and a new host is created by the discovery rule. This zabbix host represent a virtual machine and the template "Libvirt KVM Guest" is linked automaticaly to this host.
 ## Setup
 
 To use this template as manually linked to a host:
-  1. Compile Zabbix server with the required options (`--with-libxml2` and `--with-libcurl`)
-  2. Set the `StartVMwareCollectors` option in the Zabbix server configuration file to &quot;1&quot; or more
-  3. Set the host wizard configuration fields required for VMware authentication: `VMware URL`, `VMware username` and `VMware password`
-  4. To get the hypervisor UUID, enable access to the hypervisor via SSH and log in via SSH using a valid login and password.
-  5. Run the following command and specify the UUID in the `Hypervisor UUID` host wizard configuration field:
-  ```text
-  vim-cmd hostsvc/hostsummary | grep uuid
-  ```
-
-Note: To enable discovery of hardware sensors of VMware hypervisors, set the host wizard configuration field `Monitoring of hardware sensors` to the selected state.</readme>
+  1. Copy the file "userparameter-libvirt-hv.conf" into your zabbix agent include folder
+  2. Copy the two support shell scripts to the zabbix agent /etc/zabbix folder
+  3. Configure zabbix as a sudoers of the virsh command. Create file at /etc/sudoers.d/zabbix</readme>
             <groups>
                 <group>
                     <name>Templates/Applications</name>
@@ -82,7 +70,7 @@ Note: To enable discovery of hardware sensors of VMware hypervisors, set the hos
                         <trigger>
                             <uuid>a6412c94ef564c3387391ede2746b7c1</uuid>
                             <expression>last(/LibVirt KVM/icmpping[])=0</expression>
-                            <name>VMware Hypervisor: Hypervisor is down</name>
+                            <name>KVM Hypervisor: Hypervisor is down</name>
                             <priority>AVERAGE</priority>
                             <description>The service is unavailable or is not accepting ICMP pings.</description>
                             <manual_close>YES</manual_close>
@@ -976,7 +964,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             <name>Hypervisor: [{#IFNAME}] network interface speed</name>
                             <key>libvirt.hv[net.if.linkspeed,{#IFNAME}]</key>
                             <units>bps</units>
-                            <description>VMware hypervisor network interface speed.</description>
+                            <description>Libvirt hypervisor network interface speed.</description>
                             <preprocessing>
                                 <step>
                                     <type>MULTIPLIER</type>
@@ -1659,7 +1647,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: CPU</name>
+                            <name>Libvirt: CPU</name>
                             <widgets>
                                 <widget>
                                     <type>item</type>
@@ -2004,7 +1992,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: Network</name>
+                            <name>Libvirt: Network</name>
                             <widgets>
                                 <widget>
                                     <type>svggraph</type>
@@ -2277,7 +2265,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: Datastore</name>
+                            <name>Libvirt: Datastore</name>
                             <widgets>
                                 <widget>
                                     <type>honeycomb</type>
@@ -2384,6 +2372,9 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.cpu.haltpoll.success</key>
                     <units>s</units>
+                    <description>The KVM halt polling system provides a feature within KVM whereby the latency of a guest can, under some circumstances, be reduced by polling in the host for some time period after the guest has elected to no longer run by cedeing. That is, when a guest vcpu has ceded, or in the case of powerpc when all of the vcpus of a single vcore have ceded, the host kernel polls for wakeup conditions before giving up the cpu to the scheduler in order to let something else run.
+
+Polling provides a latency advantage in cases where the guest can be run again very quickly by at least saving us a trip through the scheduler, normally on the order of a few micro-seconds, although performance benefits are workload dependent. In the event that no wakeup source arrives during the polling interval or some other task on the runqueue is runnable the scheduler is invoked.</description>
                     <preprocessing>
                         <step>
                             <type>REGEX</type>
@@ -2870,7 +2861,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                     <value_type>CHAR</value_type>
                     <description>displays the state of an interface to the hypervisor that is used to control a specified guest virtual machine. For states that are not OK or Error, it will also print the number of seconds that have elapsed since the control interface entered the displayed state.</description>
                     <valuemap>
-                        <name>Libvirt Virtual Machine state</name>
+                        <name>Libvirt VM state</name>
                     </valuemap>
                     <preprocessing>
                         <step>
@@ -2906,9 +2897,6 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                     <delay>2h</delay>
                     <value_type>CHAR</value_type>
                     <description>show the domain display URI</description>
-                    <valuemap>
-                        <name>Libvirt Virtual Machine state</name>
-                    </valuemap>
                     <preprocessing>
                         <step>
                             <type>DISCARD_UNCHANGED_HEARTBEAT</type>
@@ -3047,24 +3035,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
 - Shutting down;
 - Standby;
 - Unknown.</description>
-                    <valuemap>
-                        <name>Libvirt Virtual Machine state</name>
-                    </valuemap>
                     <preprocessing>
-                        <step>
-                            <type>JAVASCRIPT</type>
-                            <parameters>
-                                <parameter>const idx = [
-	'notRunning',
-	'resetting',
-	'running',
-	'shuttingDown',
-	'standby',
-	'unknown'
-].indexOf(value);
-return idx !== -1 ? idx : 5;</parameter>
-                            </parameters>
-                        </step>
                         <step>
                             <type>DISCARD_UNCHANGED_HEARTBEAT</type>
                             <parameters>
@@ -4015,7 +3986,7 @@ flush_total_times - total time flush operations took (ns)</description>
                             <delay>10m</delay>
                             <history>1d</history>
                             <value_type>CHAR</value_type>
-                            <description>VMware virtual machine file system data</description>
+                            <description>Libvirt virtual machine file system data</description>
                             <tags>
                                 <tag>
                                     <tag>component</tag>
@@ -4071,7 +4042,7 @@ flush_total_times - total time flush operations took (ns)</description>
                     <name>Guest VM overview</name>
                     <pages>
                         <page>
-                            <name>VMware: Guest VM Overview</name>
+                            <name>Libvirt: Guest VM Overview</name>
                             <widgets>
                                 <widget>
                                     <type>gauge</type>
@@ -4498,7 +4469,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                 </widget>
                                 <widget>
                                     <type>item</type>
-                                    <name>VMware Tools version</name>
+                                    <name>Libvirt Tools version</name>
                                     <x>30</x>
                                     <y>8</y>
                                     <width>12</width>
@@ -4951,7 +4922,7 @@ flush_total_times - total time flush operations took (ns)</description>
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: CPU</name>
+                            <name>Libvirt: CPU</name>
                             <widgets>
                                 <widget>
                                     <type>svggraph</type>
@@ -5361,7 +5332,7 @@ flush_total_times - total time flush operations took (ns)</description>
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: Memory</name>
+                            <name>Libvirt: Memory</name>
                             <widgets>
                                 <widget>
                                     <type>svggraph</type>
@@ -5979,7 +5950,7 @@ flush_total_times - total time flush operations took (ns)</description>
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: Storage</name>
+                            <name>Libvirt: Storage</name>
                             <widgets>
                                 <widget>
                                     <type>graphprototype</type>
@@ -6112,7 +6083,7 @@ flush_total_times - total time flush operations took (ns)</description>
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: Filesystem</name>
+                            <name>Libvirt: Filesystem</name>
                             <widgets>
                                 <widget>
                                     <type>honeycomb</type>
@@ -6274,7 +6245,7 @@ flush_total_times - total time flush operations took (ns)</description>
                             </widgets>
                         </page>
                         <page>
-                            <name>VMware: Network</name>
+                            <name>Libvirt: Network</name>
                             <widgets>
                                 <widget>
                                     <type>graphprototype</type>
@@ -6444,82 +6415,36 @@ flush_total_times - total time flush operations took (ns)</description>
             </dashboards>
             <valuemaps>
                 <valuemap>
-                    <uuid>16644fbcd19b4da785043ffa1c3f06b4</uuid>
-                    <name>Libvirt Consolidation</name>
-                    <mappings>
-                        <mapping>
-                            <value>0</value>
-                            <newvalue>True</newvalue>
-                        </mapping>
-                        <mapping>
-                            <value>1</value>
-                            <newvalue>False</newvalue>
-                        </mapping>
-                        <mapping>
-                            <value>2</value>
-                            <newvalue>Unknown</newvalue>
-                        </mapping>
-                    </mappings>
-                </valuemap>
-                <valuemap>
-                    <uuid>881de163ce8a4f6e96dd0c4babe902c8</uuid>
-                    <name>Libvirt Hypervisor maintenance mode</name>
-                    <mappings>
-                        <mapping>
-                            <value>0</value>
-                            <newvalue>Normal mode</newvalue>
-                        </mapping>
-                        <mapping>
-                            <value>1</value>
-                            <newvalue>Maintenance mode</newvalue>
-                        </mapping>
-                    </mappings>
-                </valuemap>
-                <valuemap>
-                    <uuid>432cfecc02d14a549934a52cba45d7fd</uuid>
-                    <name>Libvirt VirtualMachinePowerState</name>
-                    <mappings>
-                        <mapping>
-                            <value>0</value>
-                            <newvalue>Powered off</newvalue>
-                        </mapping>
-                        <mapping>
-                            <value>1</value>
-                            <newvalue>Powered on</newvalue>
-                        </mapping>
-                        <mapping>
-                            <value>2</value>
-                            <newvalue>Suspended</newvalue>
-                        </mapping>
-                    </mappings>
-                </valuemap>
-                <valuemap>
                     <uuid>afc88f8ff0334f04b621e1a2c3bd3c93</uuid>
-                    <name>Libvirt Virtual Machine state</name>
+                    <name>Libvirt VM state</name>
                     <mappings>
                         <mapping>
-                            <value>0</value>
-                            <newvalue>Not running</newvalue>
-                        </mapping>
-                        <mapping>
                             <value>1</value>
-                            <newvalue>Resetting</newvalue>
+                            <newvalue>running</newvalue>
                         </mapping>
                         <mapping>
                             <value>2</value>
-                            <newvalue>Running</newvalue>
+                            <newvalue>idle</newvalue>
                         </mapping>
                         <mapping>
                             <value>3</value>
-                            <newvalue>Shutting down</newvalue>
+                            <newvalue>paused</newvalue>
                         </mapping>
                         <mapping>
                             <value>4</value>
-                            <newvalue>Standby</newvalue>
+                            <newvalue>in shutdown</newvalue>
                         </mapping>
                         <mapping>
                             <value>5</value>
-                            <newvalue>Unknown</newvalue>
+                            <newvalue>shut off</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>6</value>
+                            <newvalue>crashed</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>7</value>
+                            <newvalue>pmsuspended</newvalue>
                         </mapping>
                     </mappings>
                 </valuemap>
@@ -6538,10 +6463,6 @@ flush_total_times - total time flush operations took (ns)</description>
                         <mapping>
                             <value>2</value>
                             <newvalue>Guest tools is running</newvalue>
-                        </mapping>
-                        <mapping>
-                            <value>10</value>
-                            <newvalue>Unknown</newvalue>
                         </mapping>
                     </mappings>
                 </valuemap>

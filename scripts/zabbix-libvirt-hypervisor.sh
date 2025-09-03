@@ -3,7 +3,7 @@
 ## 30/August/2025
 #  (C) Vicente Salvador vsalvador@nabutek.com
 #
-#  10/04/2025 - Split IWA metrics to zabiwa to allow shc compiler to work
+#  30/08/2025 - Initial version
 #
 # Script to help collect information from Libvirt hypervisor using virsh command
 #
@@ -51,9 +51,9 @@ export vTmpResult="/tmp/zabbix_libvirt_kvm.$$.txt"
 
 export ZABBIX_COMMAND=$1
 export ZABBIX_OPTION=$2
-export VIRSH="sudo $(which virsh)"
+export VIRSH="sudo $(which virsh) -q"
 if [ $# -eq 3 ]; then
-   export VIRSH="sudo -u ${3} $(which virsh)"
+   export VIRSH="sudo -u ${3} $(which virsh) -q"
 fi
 
 function show_idented {
@@ -111,7 +111,7 @@ function _param {
                 IFMAC="$(echo $POOL | $AWK '{ print $3 }')"
                 jbody+="$sep"'{"{#IFNAME}":"'"${IFNAME}"'","{#IFMACADDR}":"'"${IFMAC}"'"}'
                 sep=", "
-            done <<< $($VIRSH iface-list | head -n -1 | tail -n +3)
+            done <<< $($VIRSH iface-list)
             echo "[ $jbody ]"
         ;;
         net.if.linkspeed)
@@ -226,14 +226,14 @@ function _param {
             header
             TOTALVM=0
             for HVUSER in `ps -eaf | grep libvirtd | grep -v grep | awk '{ print $1 }'`; do
-               NUMVM=`sudo -u $HVUSER $(which virsh) list --all --name | head -n -1 | wc -l`
+               NUMVM=`sudo -u $HVUSER $(which virsh) -q list --all --name | wc -l`
                TOTALVM=$(( $TOTALVM + $NUMVM ))
             done
             echo $TOTALVM
         ;;
-        vm.number)
-            $VIRSH list --all --name | head -n -1 | wc -l
-        ;;
+#        vm.number)
+#            $VIRSH list --all --name
+#        ;;
         *) echo "ZBX_NOTSUPPORTED"
         ;;
     esac

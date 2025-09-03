@@ -33,10 +33,10 @@ echo_no_nl() {
 
 # -------------------------------------------------------------------
 # PARAMETERS
-#   $1 -> Command
-#   $2 -> Libvirt Connect User
-#   $3 -> Guest Name or UUID
-#
+#   $1 -> (required) Command
+#   $2 -> (required) Libvirt Connect User
+#   $3 -> (required) Guest Name or UUID
+#   $4 -> (optional) Additional identification for some commands
 # -------------------------------------------------------------------
 
 if [ "$1" != "discovery" ] && [ "$1" != "vm.get" ] && [ "$1" != "network.get" ] && [ $# -lt 3 ] ; then
@@ -47,24 +47,26 @@ fi
 # Remove the temporary file when the script finish, with or without success.
 trap "rm -f $vTmpResult >/dev/null 2>&1 ; exit " 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 export vTmpResult="/tmp/zabbix_libvirt_guest.$$.txt"
-export VIRSH="sudo $(which virsh)"
 
 export ZABBIX_COMMAND=$1
-export ZABBIX_GUEST=$3
+export ZABBIX_DOMAIN=$3
 export ZABBIX_OPTION=$4
-if [[ $ZABBIX_GUEST =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-    ZABBIX_GUEST=$( $VIRSH domname $ZABBIX_GUEST )
-fi
 
+# If VM is a user domain and not a system domain, impersonate as the user running the VM
+export VIRSH="sudo $(which virsh)"
 if [ $# -ge 2 ] && [ $2 != "root" ]; then
    export VIRSH="sudo -u ${2} $(which virsh)"
+fi
+
+# If ZABBIX_DOMAIN is a VM UUID, convert it to domain name
+if [[ $ZABBIX_DOMAIN =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+    ZABBIX_DOMAIN=$( $VIRSH -q domname $ZABBIX_DOMAIN )
 fi
 
 function _param {
     vCommand=${1}
     vGuest=${2}
     vOption=${3}
-    vConnURI=${4}
 
     function header {
         if [ "$vOption" = "HEAD" ]; then
@@ -74,6 +76,7 @@ function _param {
 
     case $vCommand in
         discovery)
+            # We need title headers to know where VM title starts
             HEADER=$($VIRSH list --all --title | head -n +1 )
             PREFIX="${HEADER%%Title*}"
             TITLECOL=${#PREFIX}
@@ -89,7 +92,7 @@ function _param {
                 VMSTAT=$(echo $VM | $AWK '{ print $3 }')
                 VMTITLE=$($CUT -c $((${TITLECOL}+1))- <<<"$VM")
 
-                $VIRSH dominfo ${VMNAME} > $vTmpResult
+                $VIRSH -q dominfo ${VMNAME} > $vTmpResult
                 VMUUID=$(grep -i uuid       $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
                 VMAUTO=$(grep -i autostart  $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
                 VMPERS=$(grep -i persistent $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
@@ -99,7 +102,7 @@ function _param {
                 jbody+='"{#VM.AUTOSTART}":"'"${VMAUTO}"'","{#VM.PERSISTENT}":"'"${VMPERS}"'",'
                 jbody+='"{#HV.USER}":"'"$HVUSER"'","{#HV.NAME}":"'"${HVNAME}"'"}'
                 sep=", "$'\n'
-            done <<< $( sudo -u $HVUSER $(which virsh) list --all --title | head -n -1 | tail -n +3)
+            done <<< $( sudo -u $HVUSER $(which virsh) -q list --all --title)
 
             done
             echo "[ $jbody ]"
@@ -114,12 +117,12 @@ function _param {
                 IFDESC="$(echo $IFINFO | $AWK '{ print $5 }')"
                 jbody+="$sep"'{"{#IFNAME}":"'"${IFNAME}"'","{#IFDESC}":"'"${IFDESC}"'","{#IFBACKINGDEVICE}":"'"${IFBACKING}"'"}'
                 sep=", "
-            done <<< $($VIRSH domiflist $ZABBIX_GUEST | head -n -1 | tail -n +3)
+            done <<< $($VIRSH domiflist -q $ZABBIX_DOMAIN)
             echo "[ $jbody ]"
         ;;
 
         vfs.fs.discovery)
-            $VIRSH guestinfo --filesystem $ZABBIX_GUEST > $vTmpResult
+            $VIRSH -q guestinfo --filesystem $ZABBIX_DOMAIN > $vTmpResult
 
             FSCOUNT=$( cat $vTmpResult | grep "fs.count" | awk -F: '{ print $2 }')
             jbody=""
@@ -138,7 +141,7 @@ function _param {
         ;;
 
         vfs.fs.get)
-            $VIRSH guestinfo --filesystem $ZABBIX_GUEST | $EGREP "fs\.${ZABBIX_OPTION}\."
+            $VIRSH -q guestinfo --filesystem $ZABBIX_DOMAIN | $EGREP "fs\.${ZABBIX_OPTION}\."
         ;;
 
         vfs.dev.discovery)
@@ -149,24 +152,24 @@ function _param {
                 SOURCE="$(echo $DEVINFO | $AWK '{ print $2 }')"
                 jbody+="$sep"'{"{#DISKNAME}":"'"${DISKNAME}"'","{#SOURCE}":"'"${SOURCE}"'"}'
                 sep=", "
-            done <<< $($VIRSH domblklist $ZABBIX_GUEST | head -n -1 | tail -n +3)
+            done <<< $($VIRSH domblklist $ZABBIX_DOMAIN | head -n -1 | tail -n +3)
             echo "[ $jbody ]"
         ;;
 
         blk.info.get)
-            $VIRSH domblkinfo $ZABBIX_GUEST $ZABBIX_OPTION
+            $VIRSH -q domblkinfo $ZABBIX_DOMAIN $ZABBIX_OPTION
         ;;
 
         blk.stat.get)
-            $VIRSH domblkstat $ZABBIX_GUEST $ZABBIX_OPTION
+            $VIRSH -q domblkstat $ZABBIX_DOMAIN $ZABBIX_OPTION
         ;;
 
         dom.stat.get)
-            $VIRSH domstats --state --cpu-total --balloon --memory --vm $ZABBIX_GUEST
+            $VIRSH -q domstats --state --cpu-total --balloon --memory --vm $ZABBIX_DOMAIN
         ;;
 
         dom.memstat.get)
-            $VIRSH dommemstat $ZABBIX_GUEST
+            $VIRSH -q dommemstat $ZABBIX_DOMAIN
         ;;
 
         vm.get)
@@ -206,12 +209,12 @@ function _param {
                 IFADDR="$(echo $NETIF | $AWK '{ print $4 }')"
                 jbody+="$sep"'{"name":"'"${IFNAME}"'","macaddress":"'"${IFMAC}"'","protocol":"'"${IFPROT}"'","ipaddress":"'"${IFADDR}"'"}'
                 sep=", "
-            done <<< $($VIRSH domifaddr $ZABBIX_GUEST --source arp | head -n -1 | tail -n +3)
+            done <<< $($VIRSH -q domifaddr $ZABBIX_DOMAIN --source arp)
             echo '{"network": [ '"$jbody"' ]}'
         ;;
 
         net.ifstat.get)
-            $VIRSH domifstat $ZABBIX_GUEST $ZABBIX_OPTION
+            $VIRSH -q domifstat $ZABBIX_DOMAIN $ZABBIX_OPTION
         ;;
 
         snapshot.get)
@@ -225,41 +228,41 @@ function _param {
                     jbody+="$sep"'{"name":"'"${NAME}"'","createtime":"'"${CTIME}"'","state":"'"${STATE}"'"}'
                     sep=", "
                 fi
-            done <<< $($VIRSH snapshot-list $ZABBIX_GUEST | head -n -1 | tail -n +3)
+            done <<< $($VIRSH -q snapshot-list $ZABBIX_DOMAIN)
 
             echo '{"snapshot": [ '"$jbody"' ], "count": '"$COUNT"', "latestdate": null, "latestage": 0, "oldestdate": null, "oldestage": 0}'
         ;;
 
 
         cpu.num)
-            $VIRSH vcpucount $ZABBIX_GUEST | grep "current      live" | awk '{ print $3 }'
+            $VIRSH -q vcpucount $ZABBIX_DOMAIN | $EGREP "current\s+live" | awk '{ print $3 }'
         ;;
 
         domcontrol)
-            $VIRSH domcontrol $ZABBIX_GUEST
+            $VIRSH -q domcontrol $ZABBIX_DOMAIN
         ;;
 
         domdisplay)
-            $VIRSH domdisplay $ZABBIX_GUEST
+            $VIRSH -q domdisplay $ZABBIX_DOMAIN
         ;;
 
         domhostname)
-            $VIRSH domhostname $ZABBIX_GUEST
+            $VIRSH -q domhostname $ZABBIX_DOMAIN
         ;;
 
 
         guest.os)
-            $VIRSH guestinfo --os $ZABBIX_GUEST
+            $VIRSH -q guestinfo --os $ZABBIX_DOMAIN
         ;;
 
         guest.uptime)
-            PROCID=$( $VIRSH qemu-agent-command --pretty $ZABBIX_GUEST '{"execute":"guest-exec", "arguments":{"path":"cat", "arg":["/proc/uptime"], "capture-output":true}}' | jq -r '.return.pid')
-            $VIRSH qemu-agent-command --pretty $ZABBIX_GUEST '{"execute":"guest-exec-status", "arguments":{"pid":'$PROCID'}}' | jq -r '.return."out-data"' | base64 -d | awk '{ print $1 }'
+            PROCID=$( $VIRSH qemu-agent-command --pretty $ZABBIX_DOMAIN '{"execute":"guest-exec", "arguments":{"path":"cat", "arg":["/proc/uptime"], "capture-output":true}}' | jq -r '.return.pid')
+            $VIRSH qemu-agent-command --pretty $ZABBIX_DOMAIN '{"execute":"guest-exec-status", "arguments":{"pid":'$PROCID'}}' | jq -r '.return."out-data"' | base64 -d | awk '{ print $1 }'
         ;;
 
         uptime)
             CURRENT=$( date '+%s' )
-            START=$( ps -D '%s' -eo lstart,times,comm,args | grep guest=${ZABBIX_GUEST} | grep -v grep | awk '{ print $1 }' )
+            START=$( ps -D '%s' -eo lstart,times,comm,args | grep guest=${ZABBIX_DOMAIN} | grep -v grep | awk '{ print $1 }' )
 
             echo $(( $CURRENT - $START ))
         ;;
@@ -269,11 +272,8 @@ function _param {
         ;;
 
         state)
-            $VIRSH domstate $ZABBIX_GUEST
+            $VIRSH -q domstate $ZABBIX_DOMAIN
         ;;
-
-
-
 
         *) echo "ZBX_NOTSUPPORTED"
         ;;
