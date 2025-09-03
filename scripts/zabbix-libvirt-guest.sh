@@ -152,16 +152,63 @@ function _param {
                 SOURCE="$(echo $DEVINFO | $AWK '{ print $2 }')"
                 jbody+="$sep"'{"{#DISKNAME}":"'"${DISKNAME}"'","{#SOURCE}":"'"${SOURCE}"'"}'
                 sep=", "
-            done <<< $($VIRSH domblklist $ZABBIX_DOMAIN | head -n -1 | tail -n +3)
+            done <<< $($VIRSH -q domblklist $ZABBIX_DOMAIN)
             echo "[ $jbody ]"
         ;;
 
-        blk.info.get)
-            $VIRSH -q domblkinfo $ZABBIX_DOMAIN $ZABBIX_OPTION
+        # Combined JSON for LLD and statistics for block devices (disks)
+        blk.stats.get)
+            $VIRSH -q domstats $ZABBIX_DOMAIN --block > $vTmpResult
+
+            BLKCOUNT=$( cat $vTmpResult | grep "block.count" | awk -F= '{ print $2 }')
+            jbody=""
+            sep=""
+            for BLKNUM in `seq 0 $(( $BLKCOUNT - 1 ))`; do
+                BLKOBJ=$( cat $vTmpResult | grep block.${BLKNUM} | sed "s/^\s*block.${BLKNUM}.//" | \
+                            $AWK -F= '{ printf "{\"key\":\"%s\", \"value\":\"%s\"}\n", $1, $2 }' | \
+                            jq -s 'reduce .[] as $item ({}; . + { ($item.key): ($item.value | tonumber? // $item.value) })')
+                jbody+="${sep}${BLKOBJ}"
+                sep=", "
+            done
+            rm -f $vTmpResult
+            echo "[ $jbody ]"
         ;;
 
-        blk.stat.get)
-            $VIRSH -q domblkstat $ZABBIX_DOMAIN $ZABBIX_OPTION
+        fs.stats.get)
+            $VIRSH -q guestinfo --filesystem $ZABBIX_DOMAIN > $vTmpResult
+
+            FSCOUNT=$( cat $vTmpResult | grep "fs.count" | awk -F: '{ print $2 }')
+            jbody=""
+            sep=""
+            for FSNUM in `seq 0 $(( $FSCOUNT - 1 ))`; do
+                FSOBJ=$( cat $vTmpResult | grep fs.${FSNUM} | sed "s/^\s*fs.${FSNUM}.//" | \
+                            $AWK -F: '{ gsub(/\s+$/, "", $1); gsub(/^\s+/, "", $2); printf "{\"key\":\"%s\", \"value\":\"%s\"}\n", $1, $2 }' | \
+                            jq -s 'reduce .[] as $item ({}; . + { ($item.key): ($item.value | tonumber? // $item.value) })' | \
+                            jq    'def to_disk_array: { alias: .["disk.0.alias"], device: .["disk.0.device"] };                          
+                                   del(.["disk.count"]) 
+                                   | with_entries(select(.key | startswith("disk.0") | not)) 
+                                   + { disks: to_disk_array }' )
+                jbody+="${sep}${FSOBJ}"
+                sep=", "
+            done
+            rm -f $vTmpResult
+            echo "[ $jbody ]"
+        ;;
+
+        net.stats.get)
+            while IFS= read -r NETIF; do
+                read IFNAME TYPE SOURCE MODEL MAC <<< "$NETIF"
+                if [ "$IFNAME" != "-" ]; then
+                    read IFNAME2 MAC2 PROTOCOL IP <<< $($VIRSH -q domifaddr vm01 --interface vnet4 --source arp --full)
+                    jbody+="${sep}{\"name\":\"${IFNAME}\",\"ipaddr\":\"${IP}\",\"type\":\"$TYPE\",\"source\":\"$SOURCE\",\"model\":\"$MODEL\",\"mac\":\"$MAC\""
+                    while IFS= read -r STATS; do
+                        jbody+=$(echo $STATS | $AWK '{ printf ",\"%s\":\"%s\"\n", $1, $2 }')
+                    done <<< $($VIRSH -q domifstat $ZABBIX_DOMAIN --interface $IFNAME | sed "s/$IFNAME\s*//" )
+                    jbody+='}'
+                    sep=", "
+                fi
+            done <<< $($VIRSH -q domiflist $ZABBIX_DOMAIN)
+            echo "[ $jbody ]" 
         ;;
 
         dom.stat.get)
@@ -218,21 +265,19 @@ function _param {
         ;;
 
         snapshot.get)
-            COUNT=0
             jbody=""
             sep=""
             while IFS= read -r SNAPSHOT; do
                 if [ "$SNAPSHOT" != "" ]; then
-                    COUNT=$(( $COUNT + 1 ))
-                    NAME="$(echo $SNAPSHOT | $AWK '{ print $1 }')"
-                    jbody+="$sep"'{"name":"'"${NAME}"'","createtime":"'"${CTIME}"'","state":"'"${STATE}"'"}'
+                    CTIME=$(echo "$SNAPSHOT" | awk -F"  " '{ print $2 }')
+                    UTIME=$(date +%s -d "$CTIME" )
+                    jbody+="$sep"$(echo "$SNAPSHOT" | $AWK -v my_utime="$UTIME" -F"  " '{ printf "{\"name\":\"%s\", \"utime\":%d, \"createtime\":\"%s\", \"state\":\"%s\"}\n", $1, my_utime, $2, $3 }')
                     sep=", "
                 fi
             done <<< $($VIRSH -q snapshot-list $ZABBIX_DOMAIN)
 
-            echo '{"snapshot": [ '"$jbody"' ], "count": '"$COUNT"', "latestdate": null, "latestage": 0, "oldestdate": null, "oldestage": 0}'
+            echo "[ $jbody ]"
         ;;
-
 
         cpu.num)
             $VIRSH -q vcpucount $ZABBIX_DOMAIN | $EGREP "current\s+live" | awk '{ print $3 }'
@@ -249,7 +294,6 @@ function _param {
         domhostname)
             $VIRSH -q domhostname $ZABBIX_DOMAIN
         ;;
-
 
         guest.os)
             $VIRSH -q guestinfo --os $ZABBIX_DOMAIN

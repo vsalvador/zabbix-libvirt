@@ -18,10 +18,15 @@ Tested on:
 ### On monitored server (where you have kvm/libvirt)
 
 * install and configure zabbix-agent
+    ```sh
+    dnf install zabbix-agent
+    ```
+
+* install required dependencies for shell commands
    ```sh
-   dnf install zabbix-agent
+   dnf install jq awk 
    ```
-   
+
 * copy the file "userparameter-libvirt-hv.conf" into your zabbix include folder:
     ```sh
     cp configs/userparameter-libvirt-hv.conf /etc/zabbix/zabbix_agentd.d
@@ -31,6 +36,7 @@ Tested on:
     ```sh
     cp scripts/*.sh /etc/zabbix
     ```
+
 * zabbix agent runs as unprivileged zabbis user. Allows sudo this user the virsh command. Create file at /etc/sudoers.d/zabbix:
     ```sh
     cat >/etc/sudoers.d/zabbix <EOF
@@ -38,6 +44,7 @@ Tested on:
     Defaults:zabbix !syslog
     zabbix ALL=(ALL) NOPASSWD: /usr/bin/virsh
     EOF
+    ```
 
 * reboot zabbix-agent service
     ```sh
@@ -54,4 +61,3 @@ Tested on:
 * Memory usage - on hypervisor and all libvirt guests
 * Disk operations for each disk - on hypervisor and all libvirt guests
 * Network interface packets and octets - on hypervisor and all libvirt guests
-
