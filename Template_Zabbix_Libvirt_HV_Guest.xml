@@ -23,11 +23,11 @@
 
 This template is designed for the effortless deployment of KVM hypervisor monitoring using Libvirt.
 
-Inspired in the Zabbix VMware monitoring templates, uses virsh command to get status and statistics of hypervisor. Both system and user virtual machines are identified in the host and a new host is created by the discovery rule. This zabbix host represent a virtual machine and the template "Libvirt KVM Guest" is linked automaticaly to this host.
+Inspired in the Zabbix VMware monitoring templates, uses virsh command to get status and statistics of hypervisor. Both system and user virtual machines are identified in the host and a new host is created by the discovery rule. This zabbix host represent a virtual machine and the template &quot;Libvirt KVM Guest&quot; is linked automaticaly to this host.
 ## Setup
 
 To use this template as manually linked to a host:
-  1. Copy the file "userparameter-libvirt-hv.conf" into your zabbix agent include folder
+  1. Copy the file &quot;userparameter-libvirt-hv.conf&quot; into your zabbix agent include folder
   2. Copy the two support shell scripts to the zabbix agent /etc/zabbix folder
   3. Configure zabbix as a sudoers of the virsh command. Create file at /etc/sudoers.d/zabbix</readme>
             <groups>
@@ -409,7 +409,7 @@ Alternatively, a simpler metric of KSM effectiveness is the ratio of pages_shari
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>cpu</value>
+                            <value>memory</value>
                         </tag>
                     </tags>
                 </item>
@@ -511,21 +511,18 @@ ksm_zero_memory:0</description>
                 </item>
                 <item>
                     <uuid>b690cd57f759457ea08e041d7118068c</uuid>
-                    <name>Hypervisor KSM Eficiency of page sharing</name>
+                    <name>Hypervisor KSM eficiency ratio of page sharing</name>
                     <type>CALCULATED</type>
                     <key>libvirt.hv.hw.ksm.sharing.perf</key>
                     <delay>15m</delay>
                     <value_type>FLOAT</value_type>
                     <params>last(//libvirt.hv.hw.ksm.sharing) / last(//libvirt.hv.hw.ksm.shared)</params>
-                    <description>Percentage of mergeable pages currently merged by KSM, 
-
-divide the system-wide pages_shared value by the total number of offered pages (pages_shared + pages_sharing + pages_unshared + pages_volatile) and multiply by 100.
-
-Alternatively, a simpler metric of KSM effectiveness is the ratio of pages_sharing to pages_shared, which indicates the efficiency of page sharing</description>
+                    <description>Key metric in Kernel Samepage Merging (KSM) calculated as pages_sharing (memory currently shared) divided by pages_shared (all pages that were found to be shared), indicating how effectively KSM is merging duplicate memory pages.
+A high pages_sharing/pages_shared ratio signifies that most of the identified shared pages are actively being shared by multiple processes, demonstrating good efficiency.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>cpu</value>
+                            <value>memory</value>
                         </tag>
                     </tags>
                 </item>
@@ -701,7 +698,7 @@ Alternatively, a simpler metric of KSM effectiveness is the ratio of pages_shari
                     <type>DEPENDENT</type>
                     <key>libvirt.hv.memory.cached</key>
                     <units>B</units>
-                    <description>Physical memory free on the host.</description>
+                    <description>Memory used for disk cache</description>
                     <preprocessing>
                         <step>
                             <type>REGEX</type>
@@ -813,7 +810,22 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>system</value>
+                            <value>raw</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>fdf92f3cb2374237a2f350a0f6ca9abf</uuid>
+                    <name>HV: Get network data</name>
+                    <key>libvirt.hv[net.stats.get]</key>
+                    <delay>5m</delay>
+                    <history>1d</history>
+                    <value_type>TEXT</value_type>
+                    <description>Get hypervisor network statistics</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>raw</value>
                         </tag>
                     </tags>
                 </item>
@@ -828,7 +840,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>system</value>
+                            <value>raw</value>
                         </tag>
                     </tags>
                 </item>
@@ -837,12 +849,13 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <name>HV: Get node Info</name>
                     <key>libvirt.hv[nodeinfo.get]</key>
                     <delay>1h</delay>
+                    <history>1d</history>
                     <value_type>CHAR</value_type>
                     <description>Output of virsh nodeinfo command</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>system</value>
+                            <value>raw</value>
                         </tag>
                     </tags>
                 </item>
@@ -857,7 +870,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>system</value>
+                            <value>raw</value>
                         </tag>
                     </tags>
                 </item>
@@ -866,12 +879,13 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <name>HV: Get system Info</name>
                     <key>libvirt.hv[sysinfo.get]</key>
                     <delay>2h</delay>
+                    <history>1d</history>
                     <value_type>CHAR</value_type>
                     <description>Output of virsh sysinfo command parsed for zabbix processing</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>system</value>
+                            <value>raw</value>
                         </tag>
                     </tags>
                 </item>
@@ -917,13 +931,13 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <tags>
                         <tag>
                             <tag>component</tag>
-                            <value>system</value>
+                            <value>raw</value>
                         </tag>
                     </tags>
                 </item>
                 <item>
                     <uuid>ee0c3635df55474e974160bdd289e27a</uuid>
-                    <name>Number of guest VMs</name>
+                    <name>Hypervisor number of guest VMs</name>
                     <key>libvirt.hv[vmnum]</key>
                     <delay>2h</delay>
                     <trends>93d</trends>
@@ -932,6 +946,249 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                         <tag>
                             <tag>component</tag>
                             <value>system</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>5ac4b5bb4b6e4c4ebffec196d61c4ead</uuid>
+                    <name>Hypervisor network: muticast packets</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.multicast</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.multicast.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>ade7cf3705744e96adf79dbd12053b7c</uuid>
+                    <name>Hypervisor network: Bytes received</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.rx_bytes</key>
+                    <units>Bps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.rx_bytes.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>225a1e8239464792bbf0f3ef06f3e856</uuid>
+                    <name>Hypervisor network: Inbound packets discarded</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.rx_dropped</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.rx_dropped.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>5247bdec762d460c893c2c3643dd69ef</uuid>
+                    <name>Hypervisor network: Inbound packets with errors</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.rx_errors</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.rx_errors.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>64a1d67054794f7aa933bf380823f48b</uuid>
+                    <name>Hypervisor network: Inbound packets with errors</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.rx_packets</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.rx_packets.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>a51204c7178b4768ac3f33f1485a4c84</uuid>
+                    <name>Hypervisor network: Bytes sent</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.tx_bytes</key>
+                    <units>Bps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.tx_bytes.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>ea694f3f90774c57a71d4afbc6131074</uuid>
+                    <name>Hypervisor network: Outbound packets discarded</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.tx_dropped</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.tx_dropped.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>0d2997e1609c4b2da98272dc0d7a120d</uuid>
+                    <name>Hypervisor network: Outbound packets with errors</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.tx_errors</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.tx_errors.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>69e381f5c1e848dc98d3af0bbb3f7e32</uuid>
+                    <name>Hypervisor network: Outbound packets</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.stats.tx_packets</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.kernel.*.tx_packets.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
                         </tag>
                     </tags>
                 </item>
@@ -1153,10 +1410,12 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                 <macro>
                     <macro>{$LIBVIRT.VM.AUTOSTART}</macro>
                     <value>enable|disable</value>
+                    <description>Filter only domains with autostart enabled or all</description>
                 </macro>
                 <macro>
                     <macro>{$LIBVIRT.VM.PERSISTEMT}</macro>
                     <value>yes|no</value>
+                    <description>Filter only persistent domains</description>
                 </macro>
             </macros>
             <dashboards>
@@ -1417,7 +1676,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.hv[version.get]</key>
+                                                <key>libvirt.hv.version</key>
                                             </value>
                                         </field>
                                         <field>
@@ -1996,14 +2255,14 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             <widgets>
                                 <widget>
                                     <type>svggraph</type>
-                                    <name>Number of broadcast</name>
+                                    <name>Number of multicast</name>
                                     <width>36</width>
                                     <height>4</height>
                                     <fields>
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>00BFFF</value>
+                                            <value>FFD54F</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2016,24 +2275,12 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <value>5</value>
                                         </field>
                                         <field>
-                                            <type>STRING</type>
-                                            <name>ds.1.color.0</name>
-                                            <value>FF465C</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.dataset_type</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.fill</name>
-                                            <value>5</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.multicast</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2050,6 +2297,11 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>reference</name>
                                             <value>AAAAD</value>
                                         </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>righty</name>
+                                            <value>0</value>
+                                        </field>
                                     </fields>
                                 </widget>
                                 <widget>
@@ -2062,7 +2314,12 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>00BFFF</value>
+                                            <value>FFD54F</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>ds.0.color.1</name>
+                                            <value>0EC9AC</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2075,24 +2332,20 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <value>5</value>
                                         </field>
                                         <field>
-                                            <type>STRING</type>
-                                            <name>ds.1.color.0</name>
-                                            <value>FF465C</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.rx_bytes</key>
+                                            </value>
                                         </field>
                                         <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.dataset_type</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.fill</name>
-                                            <value>5</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.1</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.tx_bytes</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2108,6 +2361,11 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <type>STRING</type>
                                             <name>reference</name>
                                             <value>AAAAE</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>righty</name>
+                                            <value>0</value>
                                         </field>
                                     </fields>
                                 </widget>
@@ -2153,7 +2411,12 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>00BFFF</value>
+                                            <value>FFD54F</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>ds.0.color.1</name>
+                                            <value>0EC9AC</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2166,24 +2429,20 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <value>5</value>
                                         </field>
                                         <field>
-                                            <type>STRING</type>
-                                            <name>ds.1.color.0</name>
-                                            <value>FF465C</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.rx_dropped</key>
+                                            </value>
                                         </field>
                                         <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.dataset_type</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.fill</name>
-                                            <value>5</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.1</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.tx_dropped</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2200,6 +2459,11 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>reference</name>
                                             <value>AAAAG</value>
                                         </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>righty</name>
+                                            <value>0</value>
+                                        </field>
                                     </fields>
                                 </widget>
                                 <widget>
@@ -2213,7 +2477,12 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>00BFFF</value>
+                                            <value>FFD54F</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>ds.0.color.1</name>
+                                            <value>0EC9AC</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2226,24 +2495,20 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <value>5</value>
                                         </field>
                                         <field>
-                                            <type>STRING</type>
-                                            <name>ds.1.color.0</name>
-                                            <value>FF465C</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.rx_errors</key>
+                                            </value>
                                         </field>
                                         <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.dataset_type</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.fill</name>
-                                            <value>5</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.1</name>
+                                            <value>
+                                                <host>LibVirt KVM</host>
+                                                <key>libvirt.net.stats.tx_errors</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -2260,43 +2525,10 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>reference</name>
                                             <value>AAAAH</value>
                                         </field>
-                                    </fields>
-                                </widget>
-                            </widgets>
-                        </page>
-                        <page>
-                            <name>Libvirt: Datastore</name>
-                            <widgets>
-                                <widget>
-                                    <type>honeycomb</type>
-                                    <name>Total size of datastore</name>
-                                    <width>24</width>
-                                    <height>4</height>
-                                    <fields>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>bg_color</name>
-                                            <value>81D4FA</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>items.0</name>
-                                            <value>Hypervisor KSM sharing memory</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>primary_label</name>
-                                            <value>{{ITEM.NAME}.regsub(&quot;datastore.\[(.*)\]&quot;, \1)}</value>
-                                        </field>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>primary_label_size_type</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAJ</value>
+                                            <name>righty</name>
+                                            <value>0</value>
                                         </field>
                                     </fields>
                                 </widget>
@@ -2624,6 +2856,38 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     </tags>
                 </item>
                 <item>
+                    <uuid>3018844a881f412dbc68204d3f65ad8c</uuid>
+                    <name>Guest memory usable</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.vm.guest.memory.size.usable</key>
+                    <units>B</units>
+                    <description>Amount of guest physical memory usable by the guest</description>
+                    <preprocessing>
+                        <step>
+                            <type>REGEX</type>
+                            <parameters>
+                                <parameter>\s*balloon.usable=(\d+)</parameter>
+                                <parameter>\1</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>3h</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.vm[dom.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
                     <uuid>9c367f98506c4c06896ab5506849808e</uuid>
                     <name>Guest memory current size</name>
                     <type>DEPENDENT</type>
@@ -2697,7 +2961,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                         <step>
                             <type>JSONPATH</type>
                             <parameters>
-                                <parameter>$.count</parameter>
+                                <parameter>$.length()</parameter>
                             </parameters>
                         </step>
                         <step>
@@ -2730,14 +2994,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     <name>Snapshot latest date</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.snapshot.latestdate</key>
-                    <value_type>CHAR</value_type>
-                    <status>DISABLED</status>
+                    <trends>0</trends>
+                    <units>unixtime</units>
                     <description>Latest snapshot date of the guest VM.</description>
                     <preprocessing>
                         <step>
                             <type>JSONPATH</type>
                             <parameters>
-                                <parameter>$.latestdate</parameter>
+                                <parameter>$[*].utime.max()</parameter>
                             </parameters>
                         </step>
                         <step>
@@ -2758,20 +3022,39 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     </tags>
                 </item>
                 <item>
-                    <uuid>3fa27ecf767a46de9d6232c5bc0d206b</uuid>
-                    <name>VM Get block stats</name>
-                    <key>libvirt.vm[blk.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
-                    <value_type>TEXT</value_type>
-                    <description>Global block statistics of the guest VM.</description>
+                    <uuid>3533f08dfe964c5895e8fa5f069654ca</uuid>
+                    <name>Snapshot oldest date</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.vm.snapshot.oldestdate</key>
+                    <trends>0</trends>
+                    <units>unixtime</units>
+                    <description>Oldest snapshot date of the guest VM.</description>
                     <preprocessing>
                         <step>
-                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <type>JSONPATH</type>
                             <parameters>
-                                <parameter>1d</parameter>
+                                <parameter>$[*].utime.min()</parameter>
                             </parameters>
                         </step>
                     </preprocessing>
+                    <master_item>
+                        <key>libvirt.vm[snapshot.get, {$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>storage</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>47dcfccd99f04a378ddf685b3c15f75b</uuid>
+                    <name>VM Get block stats</name>
+                    <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    <delay>1h</delay>
+                    <history>1d</history>
+                    <value_type>TEXT</value_type>
+                    <description>Global block statistics of the guest VM.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -2801,41 +3084,11 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     </tags>
                 </item>
                 <item>
-                    <uuid>e58aacac9d5e4c99add80208e4a459eb</uuid>
-                    <name>VM Get memory statistics</name>
-                    <key>libvirt.vm[dom.memstat.get, {$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
-                    <history>1d</history>
-                    <value_type>TEXT</value_type>
-                    <status>DISABLED</status>
-                    <description>Memory statistics of the guest VM.
-
-Explanation of fields:
-swap_in - The amount of data read from swap space (in KiB)
-swap_out - The amount of memory written out to swap space (in KiB)
-major_fault - The number of page faults where disk IO was required
-minor_fault - The number of other page faults
-unused - The amount of memory left unused by the system (in KiB)
-available - The amount of usable memory as seen by the domain (in KiB)
-actual - Current balloon value (in KiB)
-rss - Resident Set Size of the running domain's process (in KiB)
-usable - The amount of memory which can be reclaimed by balloon without causing host swapping (in KiB)
-last-update - Timestamp of the last update of statistics (in seconds)
-disk_caches - The amount of memory that can be reclaimed without additional I/O, typically disk caches (in KiB)
-hugetlb_pgalloc - The number of successful huge page allocations initiated from within the domain
-hugetlb_pgfail - The number of failed huge page allocations initiated from within the domain</description>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>raw</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
                     <uuid>08548ef9d55943f98bb3b4157ef01ecd</uuid>
                     <name>VM Get domain stats</name>
                     <key>libvirt.vm[dom.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                     <delay>10m</delay>
+                    <history>1d</history>
                     <value_type>TEXT</value_type>
                     <description>Global domain statistics of the guest VM.</description>
                     <preprocessing>
@@ -2939,6 +3192,21 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                     </tags>
                 </item>
                 <item>
+                    <uuid>e8acd8997c8c4b85ad971d1ac344dfe6</uuid>
+                    <name>VM Get filesystem stats</name>
+                    <key>libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    <delay>1h</delay>
+                    <history>1d</history>
+                    <value_type>TEXT</value_type>
+                    <description>Global filesystem statistics of the guest VM.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>raw</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
                     <uuid>a8ec959b7b11445092de345df56de953</uuid>
                     <name>Uptime of guest OS</name>
                     <key>libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
@@ -2980,19 +3248,12 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                 </item>
                 <item>
                     <uuid>b6b8cf7df07b472690a5f23539663efa</uuid>
-                    <name>VM Get networks</name>
-                    <key>libvirt.vm[net.ifaddr.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
+                    <name>VM Get network stats</name>
+                    <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    <delay>10m</delay>
+                    <history>1d</history>
                     <value_type>TEXT</value_type>
                     <description>Networks of the guest VM.</description>
-                    <preprocessing>
-                        <step>
-                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                            <parameters>
-                                <parameter>1d</parameter>
-                            </parameters>
-                        </step>
-                    </preprocessing>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -3005,7 +3266,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                     <name>VM Get snapshots</name>
                     <key>libvirt.vm[snapshot.get, {$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                     <delay>1h</delay>
-                    <history>0</history>
+                    <history>1d</history>
                     <value_type>TEXT</value_type>
                     <description>Snapshots of the guest VM.</description>
                     <preprocessing>
@@ -3134,24 +3395,599 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
             </items>
             <discovery_rules>
                 <discovery_rule>
+                    <uuid>4bc9827cbe4e4da1939884e60ec59ff6</uuid>
+                    <name>Disk device/block discovery</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.vm.blk.discovery</key>
+                    <description>Discovery of all disk devices.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>725bdd919e094bc0bfc10b2754063737</uuid>
+                            <name>Average flush latency to the disk [{#BLKNAME}]</name>
+                            <type>CALCULATED</type>
+                            <key>libvirt.vm.blk.totalflushlatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <delay>10m</delay>
+                            <value_type>FLOAT</value_type>
+                            <units>s</units>
+                            <params>last(//libvirt.vm.vfs.blk.tflush[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]) / (last(//libvirt.vm.vfs.blk.oflush[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]) + 0.000001)</params>
+                            <description>The average time of each flush operation to the virtual disk.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>96119e25e15f446aa45a1dcd01d28b40</uuid>
+                            <name>Average read latency from the disk [{#BLKNAME}]</name>
+                            <type>CALCULATED</type>
+                            <key>libvirt.vm.blk.totalreadlatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <delay>10m</delay>
+                            <value_type>FLOAT</value_type>
+                            <units>s</units>
+                            <params>last(//libvirt.vm.vfs.blk.tread[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]) / (last(//libvirt.vm.vfs.blk.oread[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]) + 0.000001)</params>
+                            <description>The average time a read from the virtual disk takes.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>fd8d1829d19b41b7ae5d8fe2f29968c9</uuid>
+                            <name>Average write latency to the disk [{#BLKNAME}]</name>
+                            <type>CALCULATED</type>
+                            <key>libvirt.vm.blk.totalwritelatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <delay>10m</delay>
+                            <value_type>FLOAT</value_type>
+                            <units>s</units>
+                            <params>last(//libvirt.vm.vfs.blk.twrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]) / (last(//libvirt.vm.vfs.blk.owrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]) + 0.000001)</params>
+                            <description>The average time a write to the virtual disk takes.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>25cc68692a3149f58e142f6ba0588626</uuid>
+                            <name>Disk allocated bytes for [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.allocated[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>B</units>
+                            <description>Allocated bytes for a block disk in a VM: Actual disk space used by a specific virtual disk</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)].allocation.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>d775a96edc724f508cbd5654a23e0579</uuid>
+                            <name>Disk capacity bytes for [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.capacity[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>B</units>
+                            <description>Capacity bytes for a block disk in a VM: Maximum virtual disk size</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)].capacity.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>e2b63401f07f44bdbd95c7183be7b8bd</uuid>
+                            <name>Number of flush to the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.oflush[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <description>Libvirt virtual machine disk device flush statistics (number of operations).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;fl.reqs&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>c91d364373f64d78a07d35c4492eaf15</uuid>
+                            <name>Number of reads from the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.oread[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <description>Libvirt virtual machine disk device read statistics (number of operations).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;rd.reqs&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>91bdcab04e8c46e496a6a2c9cffc02a9</uuid>
+                            <name>Number of writes to the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.owrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <description>Libvirt virtual machine disk device write statistics (number of operations).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;wr.reqs&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>5f7cfc7a5af34c2cbec459b3a38cc3c5</uuid>
+                            <name>Number of bytes readed from the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.read[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>B</units>
+                            <description>Libvirt virtual machine disk device read statistics (bytes read).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;rd.bytes&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>7e9ed95e75f441a8a91d674e3226053e</uuid>
+                            <name>Total time flush to the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.tflush[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>s</units>
+                            <description>Libvirt virtual machine disk device flush statistics (time consumed for operations).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;fl.times&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <parameters>
+                                        <parameter>1.0E-9</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>378a4a9bee3d47fa9e04e405b9518c04</uuid>
+                            <name>Total time read from the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.tread[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>s</units>
+                            <description>Libvirt virtual machine disk device read statistics (time spent for read operations).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;rd.times&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <parameters>
+                                        <parameter>1.0E-9</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>c551ed33617f4400a20369539f599020</uuid>
+                            <name>Total time write to the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.twrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>s</units>
+                            <description>Libvirt virtual machine disk device read statistics (time spent for write operations).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;wr.times&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <parameters>
+                                        <parameter>1.0E-9</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>af49d2fa39484c62abf7b3dc2207856a</uuid>
+                            <name>Number of bytes written to the disk [{#BLKNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.vfs.blk.write[{$HV.USER},{$LIBVIRT.VM.UUID},{#BLKNAME}]</key>
+                            <units>B</units>
+                            <description>Libvirt virtual machine disk device write statistics (bytes written).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#BLKNAME}&quot;)][&quot;wr.bytes&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>disk</tag>
+                                    <value>{#BLKNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#BLKNAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>014a14a3798d4e4ab6ce7c83f39b7809</uuid>
+                    <name>Mounted filesystem discovery</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.vm.fs.discovery</key>
+                    <description>Discovery of all guest file systems.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>39d182189ea9451ba614908c91b9722f</uuid>
+                            <name>Free filesystem space on [{#MOUNTPOINT}]</name>
+                            <type>CALCULATED</type>
+                            <key>libvirt.vm.fs.free[{#FSNAME}]</key>
+                            <delay>5m</delay>
+                            <units>B</units>
+                            <params>last(//libvirt.vm.fs.total[{#FSNAME}]) - last(//libvirt.vm.fs.used[{#FSNAME}])</params>
+                            <description>Virtual machine file system free space (bytes).</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>filesystem</value>
+                                </tag>
+                                <tag>
+                                    <tag>filesystem</tag>
+                                    <value>{#MOUNTPOINT}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>d3bd708abe8c4ab4ad239064e67bbf7a</uuid>
+                            <name>Free filesystem space on [{#MOUNTPOINT}] (percentage)</name>
+                            <type>CALCULATED</type>
+                            <key>libvirt.vm.fs.pfree[{#FSNAME}]</key>
+                            <delay>5m</delay>
+                            <units>%</units>
+                            <params>100 * last(//libvirt.vm.fs.free[{#FSNAME}]) / last(//libvirt.vm.fs.total[{#FSNAME}])</params>
+                            <description>Virtual machine file system free space (percentage).</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>filesystem</value>
+                                </tag>
+                                <tag>
+                                    <tag>filesystem</tag>
+                                    <value>{#MOUNTPOINT}</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>3daffa0d09e44d03b2aba38bab077144</uuid>
+                                    <expression>max(/Libvirt KVM Guest/libvirt.vm.fs.pfree[{#FSNAME}],5m)&lt;{$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;} and {$LIBVIRT.VM.FS.TRIGGER.USED:&quot;{#FSNAME}&quot;}=1</expression>
+                                    <name>Libvirt Guest: [{#FSNAME}]: Disk space is critically low</name>
+                                    <event_name>Libvirt Guest: [{#FSNAME}]: Disk space is critically low (below {$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;}% for 5m)</event_name>
+                                    <opdata>Space free: {ITEM.LASTVALUE}</opdata>
+                                    <priority>AVERAGE</priority>
+                                    <description>The disk free space on [{#FSNAME}] has been less than `{$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;}`% for 5m.</description>
+                                    <manual_close>YES</manual_close>
+                                    <tags>
+                                        <tag>
+                                            <tag>scope</tag>
+                                            <value>capacity</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>5d95be17353349a9bbc87b7d81ed43b2</uuid>
+                                    <expression>max(/Libvirt KVM Guest/libvirt.vm.fs.pfree[{#FSNAME}],5m)&lt;{$LIBVIRT.VM.FS.PFREE.MIN.WARN:&quot;{#FSNAME}&quot;} and {$LIBVIRT.VM.FS.TRIGGER.USED:&quot;{#FSNAME}&quot;}=1</expression>
+                                    <name>Libvirt Guest: [{#FSNAME}]: Disk space is low</name>
+                                    <event_name>Libvirt Guest: [{#FSNAME}]: Disk space is low (below {$LIBVIRT.VM.FS.PFREE.MIN.WARN:&quot;{#FSNAME}&quot;}% for 5m)</event_name>
+                                    <opdata>Space free: {ITEM.LASTVALUE}</opdata>
+                                    <priority>WARNING</priority>
+                                    <description>The disk free space on [{#FSNAME}] has been less than `{$LIBVIRT.VM.FS.PFREE.MIN.WARN:&quot;{#FSNAME}&quot;}`% for 5m.</description>
+                                    <manual_close>YES</manual_close>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>Libvirt Guest: [{#FSNAME}]: Disk space is critically low</name>
+                                            <expression>max(/Libvirt KVM Guest/libvirt.vm.fs.pfree[{#FSNAME}],5m)&lt;{$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;} and {$LIBVIRT.VM.FS.TRIGGER.USED:&quot;{#FSNAME}&quot;}=1</expression>
+                                        </dependency>
+                                    </dependencies>
+                                    <tags>
+                                        <tag>
+                                            <tag>scope</tag>
+                                            <value>capacity</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>c7b77b1bda2943e8985080e948f4a7c0</uuid>
+                            <name>Total filesystem space on [{#MOUNTPOINT}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.fs.total[{#FSNAME}]</key>
+                            <units>B</units>
+                            <description>Libvirt virtual machine total disk space (bytes).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#FSNAME}&quot;)][&quot;total-bytes&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                                    <parameters>
+                                        <parameter>1d</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>filesystem</value>
+                                </tag>
+                                <tag>
+                                    <tag>filesystem</tag>
+                                    <value>{#MOUNTPOINT}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b19a434238ab4d20a94b31d81b9a2451</uuid>
+                            <name>Used filesystem space on [{#MOUNTPOINT}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.fs.used[{#FSNAME}]</key>
+                            <units>B</units>
+                            <description>Libvirt virtual machine used filesystem space (bytes).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#FSNAME}&quot;)][&quot;used-bytes&quot;].first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>filesystem</value>
+                                </tag>
+                                <tag>
+                                    <tag>filesystem</tag>
+                                    <value>{#MOUNTPOINT}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#FSNAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#MOUNTPOINT}</lld_macro>
+                            <path>$.mountpoint</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                </discovery_rule>
+                <discovery_rule>
                     <uuid>13459494e97e4cd1814ef88c3a0a8020</uuid>
                     <name>Network device discovery</name>
-                    <key>libvirt.vm[net.if.discovery,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.vm.net.if.discovery</key>
                     <description>Discovery of all network devices.</description>
                     <item_prototypes>
                         <item_prototype>
                             <uuid>0ec4c5ccb65b42e7a73276a4214694d9</uuid>
-                            <name>Number of dropped packets received on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
+                            <name>Number of dropped packets received on interface [{#SOURCE}]/[{#IFNAME}]</name>
                             <type>DEPENDENT</type>
-                            <key>libvirt.vm.net.if.in[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME},drop]</key>
+                            <key>libvirt.vm.net.if.in[{#IFNAME},drop]</key>
                             <description>Libvirt virtual machine network interface received statistics (packets dropped).</description>
                             <preprocessing>
                                 <step>
-                                    <type>REGEX</type>
+                                    <type>JSONPATH</type>
                                     <parameters>
-                                        <parameter>.* rx_drop (\d+)</parameter>
-                                        <parameter>\1</parameter>
+                                        <parameter>$.[?(@.name==&quot;{#IFNAME}&quot;)].rx_drop.first()</parameter>
                                     </parameters>
                                 </step>
                                 <step>
@@ -3159,7 +3995,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                                 </step>
                             </preprocessing>
                             <master_item>
-                                <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                             </master_item>
                             <tags>
                                 <tag>
@@ -3174,16 +4010,15 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                         </item_prototype>
                         <item_prototype>
                             <uuid>dc48741123224e36abf216bde97207dc</uuid>
-                            <name>Number of packets received on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
+                            <name>Number of packets received on interface [{#SOURCE}]/[{#IFNAME}]</name>
                             <type>DEPENDENT</type>
-                            <key>libvirt.vm.net.if.in[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME},pps]</key>
+                            <key>libvirt.vm.net.if.in[{#IFNAME},pps]</key>
                             <description>Libvirt virtual machine network interface input statistics (packets per second).</description>
                             <preprocessing>
                                 <step>
-                                    <type>REGEX</type>
+                                    <type>JSONPATH</type>
                                     <parameters>
-                                        <parameter>.* rx_packets (\d+)</parameter>
-                                        <parameter>\1</parameter>
+                                        <parameter>$.[?(@.name==&quot;{#IFNAME}&quot;)].rx_packets.first()</parameter>
                                     </parameters>
                                 </step>
                                 <step>
@@ -3191,7 +4026,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                                 </step>
                             </preprocessing>
                             <master_item>
-                                <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                             </master_item>
                             <tags>
                                 <tag>
@@ -3206,17 +4041,16 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                         </item_prototype>
                         <item_prototype>
                             <uuid>f4b65128dc664b338c4435f1d7c450c6</uuid>
-                            <name>Number of bytes received on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
+                            <name>Number of bytes received on interface [{#SOURCE}]/[{#IFNAME}]</name>
                             <type>DEPENDENT</type>
-                            <key>libvirt.vm.net.if.in[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                            <key>libvirt.vm.net.if.in[{#IFNAME}]</key>
                             <units>Bps</units>
                             <description>Libvirt virtual machine network interface input statistics (bytes per second).</description>
                             <preprocessing>
                                 <step>
-                                    <type>REGEX</type>
+                                    <type>JSONPATH</type>
                                     <parameters>
-                                        <parameter>.* rx_bytes (\d+)</parameter>
-                                        <parameter>\1</parameter>
+                                        <parameter>$.[?(@.name==&quot;{#IFNAME}&quot;)].rx_bytes.first()</parameter>
                                     </parameters>
                                 </step>
                                 <step>
@@ -3224,39 +4058,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                                 </step>
                             </preprocessing>
                             <master_item>
-                                <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>interface</value>
-                                </tag>
-                                <tag>
-                                    <tag>interface</tag>
-                                    <value>{#IFNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>316c9e603e4b424f884deedf42e5d40f</uuid>
-                            <name>Number of packets transmitted on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.net.if.out[{$HV.USER},{$LIBVIRT.VM.UUID},,{#IFNAME},pps]</key>
-                            <description>Libvirt virtual machine network interface output statistics (packets per second).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* tx_packets (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>CHANGE_PER_SECOND</type>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                             </master_item>
                             <tags>
                                 <tag>
@@ -3271,16 +4073,15 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                         </item_prototype>
                         <item_prototype>
                             <uuid>4477bbd19c784a1195380a888b8f87e4</uuid>
-                            <name>Number of dropped packets transmitted on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
+                            <name>Number of dropped packets transmitted on interface [{#SOURCE}]/[{#IFNAME}]</name>
                             <type>DEPENDENT</type>
-                            <key>libvirt.vm.net.if.out[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME},drop]</key>
+                            <key>libvirt.vm.net.if.out[{#IFNAME},drop]</key>
                             <description>Libvirt virtual machine network interface transmitted statistics (packets dropped).</description>
                             <preprocessing>
                                 <step>
-                                    <type>REGEX</type>
+                                    <type>JSONPATH</type>
                                     <parameters>
-                                        <parameter>.* tx_drop (\d+)</parameter>
-                                        <parameter>\1</parameter>
+                                        <parameter>$.[?(@.name==&quot;{#IFNAME}&quot;)].tx_drop.first()</parameter>
                                     </parameters>
                                 </step>
                                 <step>
@@ -3288,7 +4089,38 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                                 </step>
                             </preprocessing>
                             <master_item>
-                                <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>interface</value>
+                                </tag>
+                                <tag>
+                                    <tag>interface</tag>
+                                    <value>{#IFNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>316c9e603e4b424f884deedf42e5d40f</uuid>
+                            <name>Number of packets transmitted on interface [{#SOURCE}]/[{#IFNAME}]</name>
+                            <type>DEPENDENT</type>
+                            <key>libvirt.vm.net.if.out[{#IFNAME},pps]</key>
+                            <description>Libvirt virtual machine network interface output statistics (packets per second).</description>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.name==&quot;{#IFNAME}&quot;)].tx_packets.first()</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                             </master_item>
                             <tags>
                                 <tag>
@@ -3303,17 +4135,16 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                         </item_prototype>
                         <item_prototype>
                             <uuid>5cf4f06540d34eea9b67139811c22b61</uuid>
-                            <name>Number of bytes transmitted on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
+                            <name>Number of bytes transmitted on interface [{#SOURCE}]/[{#IFNAME}]</name>
                             <type>DEPENDENT</type>
-                            <key>libvirt.vm.net.if.out[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                            <key>libvirt.vm.net.if.out[{#IFNAME}]</key>
                             <units>Bps</units>
                             <description>Libvirt virtual machine network interface output statistics (bytes per second).</description>
                             <preprocessing>
                                 <step>
-                                    <type>REGEX</type>
+                                    <type>JSONPATH</type>
                                     <parameters>
-                                        <parameter>.* tx_bytes (\d+)</parameter>
-                                        <parameter>\1</parameter>
+                                        <parameter>$.[?(@.name==&quot;{#IFNAME}&quot;)].tx_bytes.first()</parameter>
                                     </parameters>
                                 </step>
                                 <step>
@@ -3321,7 +4152,7 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                                 </step>
                             </preprocessing>
                             <master_item>
-                                <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                             </master_item>
                             <tags>
                                 <tag>
@@ -3336,12 +4167,12 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                         </item_prototype>
                         <item_prototype>
                             <uuid>29557cd9cd9c4ebfa5fb31e3616c2ee9</uuid>
-                            <name>Network utilization on interface [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
+                            <name>Network utilization on interface [{#SOURCE}]/[{#IFNAME}]</name>
                             <type>CALCULATED</type>
-                            <key>libvirt.vm.net.if.usage[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                            <key>libvirt.vm.net.if.usage[{#IFNAME}]</key>
                             <delay>5m</delay>
                             <units>Bps</units>
-                            <params>last(//libvirt.vm.net.if.in[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]) + last(//libvirt.vm.net.if.out[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}])</params>
+                            <params>last(//libvirt.vm.net.if.in[{#IFNAME}]) + last(//libvirt.vm.net.if.out[{#IFNAME}])</params>
                             <description>Libvirt virtual machine network utilization (combined transmit and receive rates) during the interval.</description>
                             <preprocessing>
                                 <step>
@@ -3359,646 +4190,20 @@ hugetlb_pgfail - The number of failed huge page allocations initiated from withi
                                 </tag>
                             </tags>
                         </item_prototype>
-                        <item_prototype>
-                            <uuid>81ba6001c87c44e09191629aea2c71a5</uuid>
-                            <name>Get network statistics [{#IFBACKINGDEVICE}]/[{#IFNAME}]</name>
-                            <key>libvirt.vm[net.ifstat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
-                            <delay>15m</delay>
-                            <value_type>CHAR</value_type>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>interface</value>
-                                </tag>
-                                <tag>
-                                    <tag>interface</tag>
-                                    <value>{#IFNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
                     </item_prototypes>
-                </discovery_rule>
-                <discovery_rule>
-                    <uuid>48c384c57eba40b68b2d7eacfac2aee9</uuid>
-                    <name>Disk device/block discovery</name>
-                    <key>libvirt.vm[vfs.dev.discovery,,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
-                    <description>Discovery of all disk devices.</description>
-                    <item_prototypes>
-                        <item_prototype>
-                            <uuid>d329e252cf7b4aaeac8ca3f611f6729d</uuid>
-                            <name>Average read latency from the disk [{#DISKNAME}]</name>
-                            <type>CALCULATED</type>
-                            <key>libvirt.vm.storage.totalreadlatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <delay>10m</delay>
-                            <units>!ms</units>
-                            <params>last(//libvirt.vm.vfs.dev.tread[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]) / (last(//libvirt.vm.vfs.dev.oread[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]) + 0.000001)</params>
-                            <description>The average time a read from the virtual disk takes.</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>bc783c615bd640ee95dbf62017b362c5</uuid>
-                            <name>Average write latency to the disk [{#DISKNAME}]</name>
-                            <type>CALCULATED</type>
-                            <key>libvirt.vm.storage.totalwritelatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <delay>10m</delay>
-                            <units>!ms</units>
-                            <params>last(//libvirt.vm.vfs.dev.twrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]) / (last(//libvirt.vm.vfs.dev.owrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]) + 0.000001)</params>
-                            <description>The average time a write to the virtual disk takes.</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>474af537d48e424c90139cf2e49be50b</uuid>
-                            <name>Disk allocated bytes for [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.allocated[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>B</units>
-                            <description>Libvirt virtual machine disk allocated bytes
-
-Capacity:       53687091200
-Allocation:     19822678016
-Physical:       19821625344</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>Allocation:\s*(\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.info.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>ddb536bba621415fa086935bc1a5cd57</uuid>
-                            <name>Disk capacity bytes for [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.capacity[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>B</units>
-                            <description>Libvirt virtual machine disk allocated bytes</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>Capacity:\s*(\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.info.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>dbd195d978f24f10a390e2077d2a109c</uuid>
-                            <name>Number of flush to the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.oflush[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <description>Libvirt virtual machine disk device flush statistics (number of operations).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* flush_operations (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>be6d785866fb437cb06101eea5bd1d7a</uuid>
-                            <name>Number of reads from the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.oread[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <description>Libvirt virtual machine disk device read statistics (number of operations).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* rd_req (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>6bc71aa3428b4d1eb6ea589929271e07</uuid>
-                            <name>Number of writes to the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.owrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <description>Libvirt virtual machine disk device write statistics (number of operations).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* wr_req (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>5d24df7287c944e9829d55b13b02a23c</uuid>
-                            <name>Number of bytes readed from the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.read[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>B</units>
-                            <description>Libvirt virtual machine disk device read statistics (bytes read).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* rd_bytes (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>ebf6d82f06834a959eaf3a8c508c54fd</uuid>
-                            <name>Total time flush to the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.tflush[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>!ms</units>
-                            <description>Libvirt virtual machine disk device read statistics (bytes readed).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* flush_total_times (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                                <step>
-                                    <type>MULTIPLIER</type>
-                                    <parameters>
-                                        <parameter>1.0E-6</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>5965d4510fe44bf59128386285bcc4ed</uuid>
-                            <name>Total time read from the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.tread[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>!ms</units>
-                            <description>Libvirt virtual machine disk device read statistics (bytes readed).
-
-vda rd_req 91376622
-vda rd_bytes 922050212864
-vda wr_req 31450652
-vda wr_bytes 503783343104
-vda flush_operations 46498
-vda rd_total_times 11019661545439
-vda wr_total_times 36548213833204
-vda flush_total_times 57608695774</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* rd_total_times (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                                <step>
-                                    <type>MULTIPLIER</type>
-                                    <parameters>
-                                        <parameter>1.0E-6</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>81331290e6e342f59de5a7225690e4fe</uuid>
-                            <name>Total time write to the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.twrite[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>!ms</units>
-                            <description>Libvirt virtual machine disk device write statistics (bytes written).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* wr_total_times (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                                <step>
-                                    <type>MULTIPLIER</type>
-                                    <parameters>
-                                        <parameter>1.0E-6</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>d4fe299768ba44a1aa7f4510bcdbaa61</uuid>
-                            <name>Number of bytes written to the disk [{#DISKNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.dev.write[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <units>B</units>
-                            <description>Libvirt virtual machine disk device write statistics (bytes written).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>.* wr_bytes (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>SIMPLE_CHANGE</type>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>disk</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>f7ac79770f96495793dffa6ceba0cf97</uuid>
-                            <name>Get allocation data [{#DISKNAME}]</name>
-                            <key>libvirt.vm[blk.info.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <delay>2h</delay>
-                            <value_type>CHAR</value_type>
-                            <description>Get disk size and allocation information</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>raw</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>54fc16508aad49aa87b08f85dbd8aa24</uuid>
-                            <name>Get block statistics [{#DISKNAME}]</name>
-                            <key>libvirt.vm[blk.stat.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                            <delay>10m</delay>
-                            <value_type>CHAR</value_type>
-                            <description>Get block/disk statistics
-
-rd_req - count of read operations
-rd_bytes - count of read bytes
-wr_req - count of write operations
-wr_bytes - count of written bytes
-errs - error count
-flush_operations - count of flush operations
-rd_total_times - total time read operations took (ns)
-wr_total_times - total time write operations took (ns)
-flush_total_times - total time flush operations took (ns)</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>raw</value>
-                                </tag>
-                                <tag>
-                                    <tag>disk</tag>
-                                    <value>{#DISKNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                    </item_prototypes>
-                </discovery_rule>
-                <discovery_rule>
-                    <uuid>014a14a3798d4e4ab6ce7c83f39b7809</uuid>
-                    <name>Mounted filesystem discovery</name>
-                    <key>libvirt.vm[vfs.fs.discovery,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
-                    <description>Discovery of all guest file systems.</description>
-                    <item_prototypes>
-                        <item_prototype>
-                            <uuid>39d182189ea9451ba614908c91b9722f</uuid>
-                            <name>Free filesystem space on [{#FSNAME}]</name>
-                            <type>CALCULATED</type>
-                            <key>libvirt.vm.vfs.fs.free[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            <delay>5m</delay>
-                            <units>B</units>
-                            <params>last(//libvirt.vm.vfs.fs.total[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]) - last(//libvirt.vm.vfs.fs.used[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}])</params>
-                            <description>Libvirt virtual machine file system statistics (bytes).</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>filesystem</value>
-                                </tag>
-                                <tag>
-                                    <tag>filesystem</tag>
-                                    <value>{#FSNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>d3bd708abe8c4ab4ad239064e67bbf7a</uuid>
-                            <name>Free filesystem space on [{#FSNAME}] (percentage)</name>
-                            <type>CALCULATED</type>
-                            <key>libvirt.vm.vfs.fs.pfree[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            <delay>5m</delay>
-                            <value_type>FLOAT</value_type>
-                            <units>%</units>
-                            <params>100 * last(//libvirt.vm.vfs.fs.free[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]) / last(//libvirt.vm.vfs.fs.total[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}])</params>
-                            <description>Libvirt virtual machine file system statistics (percentage).</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>filesystem</value>
-                                </tag>
-                                <tag>
-                                    <tag>filesystem</tag>
-                                    <value>{#FSNAME}</value>
-                                </tag>
-                            </tags>
-                            <trigger_prototypes>
-                                <trigger_prototype>
-                                    <uuid>3daffa0d09e44d03b2aba38bab077144</uuid>
-                                    <expression>max(/Libvirt KVM Guest/libvirt.vm.vfs.fs.pfree[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}],5m)&lt;{$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;} and {$LIBVIRT.VM.FS.TRIGGER.USED:&quot;{#FSNAME}&quot;}=1</expression>
-                                    <name>Libvirt Guest: [{#FSNAME}]: Disk space is critically low</name>
-                                    <event_name>Libvirt Guest: [{#FSNAME}]: Disk space is critically low (below {$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;}% for 5m)</event_name>
-                                    <opdata>Space free: {ITEM.LASTVALUE}</opdata>
-                                    <priority>AVERAGE</priority>
-                                    <description>The disk free space on [{#FSNAME}] has been less than `{$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;}`% for 5m.</description>
-                                    <manual_close>YES</manual_close>
-                                    <tags>
-                                        <tag>
-                                            <tag>scope</tag>
-                                            <value>capacity</value>
-                                        </tag>
-                                    </tags>
-                                </trigger_prototype>
-                                <trigger_prototype>
-                                    <uuid>5d95be17353349a9bbc87b7d81ed43b2</uuid>
-                                    <expression>max(/Libvirt KVM Guest/libvirt.vm.vfs.fs.pfree[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}],5m)&lt;{$LIBVIRT.VM.FS.PFREE.MIN.WARN:&quot;{#FSNAME}&quot;} and {$LIBVIRT.VM.FS.TRIGGER.USED:&quot;{#FSNAME}&quot;}=1</expression>
-                                    <name>Libvirt Guest: [{#FSNAME}]: Disk space is low</name>
-                                    <event_name>Libvirt Guest: [{#FSNAME}]: Disk space is low (below {$LIBVIRT.VM.FS.PFREE.MIN.WARN:&quot;{#FSNAME}&quot;}% for 5m)</event_name>
-                                    <opdata>Space free: {ITEM.LASTVALUE}</opdata>
-                                    <priority>WARNING</priority>
-                                    <description>The disk free space on [{#FSNAME}] has been less than `{$LIBVIRT.VM.FS.PFREE.MIN.WARN:&quot;{#FSNAME}&quot;}`% for 5m.</description>
-                                    <manual_close>YES</manual_close>
-                                    <dependencies>
-                                        <dependency>
-                                            <name>Libvirt Guest: [{#FSNAME}]: Disk space is critically low</name>
-                                            <expression>max(/Libvirt KVM Guest/libvirt.vm.vfs.fs.pfree[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}],5m)&lt;{$LIBVIRT.VM.FS.PFREE.MIN.CRIT:&quot;{#FSNAME}&quot;} and {$LIBVIRT.VM.FS.TRIGGER.USED:&quot;{#FSNAME}&quot;}=1</expression>
-                                        </dependency>
-                                    </dependencies>
-                                    <tags>
-                                        <tag>
-                                            <tag>scope</tag>
-                                            <value>capacity</value>
-                                        </tag>
-                                    </tags>
-                                </trigger_prototype>
-                            </trigger_prototypes>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>c7b77b1bda2943e8985080e948f4a7c0</uuid>
-                            <name>Total filesystem space on [{#FSNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.fs.total[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            <units>B</units>
-                            <description>Libvirt virtual machine total disk space (bytes).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>fs\.\d+\.total-bytes\s+: (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                                <step>
-                                    <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                                    <parameters>
-                                        <parameter>1d</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[vfs.fs.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>filesystem</value>
-                                </tag>
-                                <tag>
-                                    <tag>filesystem</tag>
-                                    <value>{#FSNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>b19a434238ab4d20a94b31d81b9a2451</uuid>
-                            <name>Used filesystem space on [{#FSNAME}]</name>
-                            <type>DEPENDENT</type>
-                            <key>libvirt.vm.vfs.fs.used[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            <units>B</units>
-                            <description>Libvirt virtual machine used disk space (bytes).</description>
-                            <preprocessing>
-                                <step>
-                                    <type>REGEX</type>
-                                    <parameters>
-                                        <parameter>fs.\d+.used-bytes\s+: (\d+)</parameter>
-                                        <parameter>\1</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <master_item>
-                                <key>libvirt.vm[vfs.fs.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            </master_item>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>filesystem</value>
-                                </tag>
-                                <tag>
-                                    <tag>filesystem</tag>
-                                    <value>{#FSNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>b6f8986bc3f8411fa6440e8e22bf2287</uuid>
-                            <name>Get filesystem data [{#FSNAME}]</name>
-                            <key>libvirt.vm[vfs.fs.get, {$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
-                            <delay>10m</delay>
-                            <history>1d</history>
-                            <value_type>CHAR</value_type>
-                            <description>Libvirt virtual machine file system data</description>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>filesystem</value>
-                                </tag>
-                                <tag>
-                                    <tag>filesystem</tag>
-                                    <value>{#FSNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                    </item_prototypes>
+                    <master_item>
+                        <key>libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#IFNAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#SOURCE}</lld_macro>
+                            <path>$.source</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
                 </discovery_rule>
             </discovery_rules>
             <tags>
@@ -5964,14 +6169,6 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <value>1</value>
                                         </field>
                                         <field>
-                                            <type>ITEM_PROTOTYPE</type>
-                                            <name>itemid.0</name>
-                                            <value>
-                                                <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.vfs.dev.tread[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                                            </value>
-                                        </field>
-                                        <field>
                                             <type>STRING</type>
                                             <name>reference</name>
                                             <value>AAAAH</value>
@@ -5994,14 +6191,6 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <type>INTEGER</type>
                                             <name>columns</name>
                                             <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>ITEM_PROTOTYPE</type>
-                                            <name>itemid.0</name>
-                                            <value>
-                                                <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.storage.totalreadlatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                                            </value>
                                         </field>
                                         <field>
                                             <type>STRING</type>
@@ -6028,14 +6217,6 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <value>1</value>
                                         </field>
                                         <field>
-                                            <type>ITEM_PROTOTYPE</type>
-                                            <name>itemid.0</name>
-                                            <value>
-                                                <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.vfs.dev.write[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                                            </value>
-                                        </field>
-                                        <field>
                                             <type>STRING</type>
                                             <name>reference</name>
                                             <value>AAAAK</value>
@@ -6059,14 +6240,6 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <type>INTEGER</type>
                                             <name>columns</name>
                                             <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>ITEM_PROTOTYPE</type>
-                                            <name>itemid.0</name>
-                                            <value>
-                                                <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.storage.totalwritelatency[{$HV.USER},{$LIBVIRT.VM.UUID},{#DISKNAME}]</key>
-                                            </value>
                                         </field>
                                         <field>
                                             <type>STRING</type>
@@ -6135,7 +6308,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.vfs.fs.free[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
+                                                <key>libvirt.vm.fs.free[{#FSNAME}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -6227,7 +6400,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.vfs.fs.pfree[{$HV.USER},{$LIBVIRT.VM.UUID},{#FSNUM}]</key>
+                                                <key>libvirt.vm.fs.pfree[{#FSNAME}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -6263,7 +6436,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.net.if.usage[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                                <key>libvirt.vm.net.if.usage[{#IFNAME}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -6295,7 +6468,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.net.if.in[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                                <key>libvirt.vm.net.if.in[{#IFNAME}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -6327,7 +6500,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.net.if.in[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME},pps]</key>
+                                                <key>libvirt.vm.net.if.in[{#IFNAME},pps]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -6360,7 +6533,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.net.if.out[{$HV.USER},{$LIBVIRT.VM.UUID},{#IFNAME}]</key>
+                                                <key>libvirt.vm.net.if.out[{#IFNAME}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -6393,7 +6566,7 @@ flush_total_times - total time flush operations took (ns)</description>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.net.if.out[{$HV.USER},{$LIBVIRT.VM.UUID},,{#IFNAME},pps]</key>
+                                                <key>libvirt.vm.net.if.out[{#IFNAME},pps]</key>
                                             </value>
                                         </field>
                                         <field>
