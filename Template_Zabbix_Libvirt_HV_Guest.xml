@@ -1478,9 +1478,22 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             </tags>
                             <trigger_prototypes>
                                 <trigger_prototype>
+                                    <uuid>00e9347e47324eeeb9d1144e6f08cd48</uuid>
+                                    <expression>last(/LibVirt KVM/pool.pfree[{#POOLUUID}]) &lt; {$LIBVIRT.POOL.SPACE.PFREE.CRIT}</expression>
+                                    <name>Pool [{#HV.USER}/{#POOLNAME}]: Available &lt; {$LIBVIRT.POOL.SPACE.PFREE.CRIT}%</name>
+                                    <priority>AVERAGE</priority>
+                                </trigger_prototype>
+                                <trigger_prototype>
                                     <uuid>fb581ebd9a3d4475a985bac4b80c93ed</uuid>
-                                    <expression>last(/LibVirt KVM/pool.pfree[{#POOLUUID}]) &lt; 10</expression>
-                                    <name>Pool [{#HV.USER}/{#POOLNAME}]: Available &lt; 10%</name>
+                                    <expression>last(/LibVirt KVM/pool.pfree[{#POOLUUID}]) &lt; {$LIBVIRT.POOL.SPACE.PFREE.WARN}</expression>
+                                    <name>Pool [{#HV.USER}/{#POOLNAME}]: Available &lt; {$LIBVIRT.POOL.SPACE.PFREE.WARN}%</name>
+                                    <priority>WARNING</priority>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>Pool [{#HV.USER}/{#POOLNAME}]: Available &lt; {$LIBVIRT.POOL.SPACE.PFREE.CRIT}%</name>
+                                            <expression>last(/LibVirt KVM/pool.pfree[{#POOLUUID}]) &lt; {$LIBVIRT.POOL.SPACE.PFREE.CRIT}</expression>
+                                        </dependency>
+                                    </dependencies>
                                 </trigger_prototype>
                             </trigger_prototypes>
                         </item_prototype>
@@ -1560,9 +1573,9 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
             </tags>
             <macros>
                 <macro>
-                    <macro>{$LIBVIRT.HV.DATASTORE.SPACE.CRIT}</macro>
+                    <macro>{$LIBVIRT.POOL.SPACE.PFREE.CRIT}</macro>
                     <value>10</value>
-                    <description>The critical threshold of the datastore free space.</description>
+                    <description>The critical threshold of the pool free space.</description>
                     <config>
                         <type>TEXT</type>
                         <priority>6</priority>
@@ -1573,9 +1586,9 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     </config>
                 </macro>
                 <macro>
-                    <macro>{$LIBVIRT.HV.DATASTORE.SPACE.WARN}</macro>
+                    <macro>{$LIBVIRT.POOL.SPACE.PFREE.WARN}</macro>
                     <value>20</value>
-                    <description>The warning threshold of the datastore free space.</description>
+                    <description>The warning threshold of the pool free space.</description>
                     <config>
                         <type>TEXT</type>
                         <priority>5</priority>
@@ -3179,13 +3192,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                         <step>
                             <type>JSONPATH</type>
                             <parameters>
-                                <parameter>$[*].utime.max()</parameter>
+                                <parameter>$[?(@.utime)].utime.max()</parameter>
                             </parameters>
+                            <error_handler>DISCARD_VALUE</error_handler>
                         </step>
                         <step>
                             <type>DISCARD_UNCHANGED_HEARTBEAT</type>
                             <parameters>
-                                <parameter>1d</parameter>
+                                <parameter>6h</parameter>
                             </parameters>
                         </step>
                     </preprocessing>
@@ -3211,7 +3225,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                         <step>
                             <type>JSONPATH</type>
                             <parameters>
-                                <parameter>$[*].utime.min()</parameter>
+                                <parameter>$[?(@.utime)].utime.min()</parameter>
+                            </parameters>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>4h</parameter>
                             </parameters>
                         </step>
                     </preprocessing>
@@ -3229,7 +3250,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     <uuid>47dcfccd99f04a378ddf685b3c15f75b</uuid>
                     <name>VM Get block stats</name>
                     <key>libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
-                    <delay>1h</delay>
+                    <delay>10m</delay>
                     <history>1d</history>
                     <value_type>TEXT</value_type>
                     <description>Global block statistics of the guest VM.</description>
@@ -3242,7 +3263,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>21b4c8afe22f42179787a55ce4e98937</uuid>
-                    <name>Number of virtual CPUs</name>
+                    <name>VM Number of virtual CPUs</name>
                     <key>libvirt.vm[cpu.num, {$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                     <delay>1h</delay>
                     <description>Number of virtual CPUs assigned to the guest.</description>
@@ -3410,11 +3431,17 @@ Polling provides a latency advantage in cases where the guest can be run again v
                         <trigger>
                             <uuid>2ad6ea6318194332b2ffc7a8d0f58915</uuid>
                             <expression>last(/Libvirt KVM Guest/libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}])&lt;600</expression>
-                            <name>Libvirt Guest: VM has been restarted</name>
-                            <event_name>Libvirt Guest: VM has been restarted (uptime &lt; 10m)</event_name>
+                            <name>Libvirt Guest: VM has been rebooted</name>
+                            <event_name>Libvirt Guest: VM has been rebooted (OS uptime &lt; 10m)</event_name>
                             <priority>WARNING</priority>
                             <description>Uptime is less than 10 minutes.</description>
                             <manual_close>YES</manual_close>
+                            <dependencies>
+                                <dependency>
+                                    <name>Libvirt Guest: VM has been restarted</name>
+                                    <expression>last(/Libvirt KVM Guest/libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}])&lt;600</expression>
+                                </dependency>
+                            </dependencies>
                             <tags>
                                 <tag>
                                     <tag>scope</tag>
@@ -3447,14 +3474,6 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     <history>1d</history>
                     <value_type>TEXT</value_type>
                     <description>Snapshots of the guest VM.</description>
-                    <preprocessing>
-                        <step>
-                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                            <parameters>
-                                <parameter>1d</parameter>
-                            </parameters>
-                        </step>
-                    </preprocessing>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -3558,7 +3577,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>71f0400c3c5648db96074b3fff7e6949</uuid>
-                    <name>Uptime VM</name>
+                    <name>VM Uptime</name>
                     <key>libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                     <delay>5m</delay>
                     <units>uptime</units>
@@ -3569,6 +3588,23 @@ Polling provides a latency advantage in cases where the guest can be run again v
                             <value>system</value>
                         </tag>
                     </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>1ceaa7fc821945d3808a53e03a706273</uuid>
+                            <expression>last(/Libvirt KVM Guest/libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}])&lt;600</expression>
+                            <name>Libvirt Guest: VM has been restarted</name>
+                            <event_name>Libvirt Guest: VM has been restarted (VM uptime &lt; 10m)</event_name>
+                            <priority>WARNING</priority>
+                            <description>VM Uptime is less than 10 minutes.</description>
+                            <manual_close>YES</manual_close>
+                            <tags>
+                                <tag>
+                                    <tag>scope</tag>
+                                    <value>notice</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
                 </item>
             </items>
             <discovery_rules>
