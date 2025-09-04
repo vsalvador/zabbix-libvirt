@@ -4,6 +4,7 @@
 #  (C) Vicente Salvador vsalvador@nabutek.com
 #
 #  30/08/2025 - Initial version
+#  04/09/2025 - Move VM discovery to hypervisor shell
 #
 # Script to help collect information from Libvirt Guest Machines using virsh command
 #
@@ -27,10 +28,6 @@ TR=tr
 CUT=cut
 DATE=date
 
-echo_no_nl() {
-    echo -n "$1"
-}
-
 # -------------------------------------------------------------------
 # PARAMETERS
 #   $1 -> (required) Command
@@ -39,7 +36,7 @@ echo_no_nl() {
 #   $4 -> (optional) Additional identification for some commands
 # -------------------------------------------------------------------
 
-if [ "$1" != "discovery" ] && [ "$1" != "vm.get" ] && [ "$1" != "network.get" ] && [ $# -lt 3 ] ; then
+if [ "$1" != "vm.get" ] && [ "$1" != "network.get" ] && [ $# -lt 3 ] ; then
   echo "ZBX_NOTSUPPORTED"
   exit 1
 fi
@@ -68,46 +65,11 @@ function _param {
     vGuest=${2}
     vOption=${3}
 
-    function header {
-        if [ "$vOption" = "HEAD" ]; then
-            echo_no_nl "${vCommand} : "
-        fi
-    }
-
     case $vCommand in
-        discovery)
-            # We need title headers to know where VM title starts
-            HEADER=$($VIRSH list --all --title | head -n +1 )
-            PREFIX="${HEADER%%Title*}"
-            TITLECOL=${#PREFIX}
 
-            jbody=""
-            sep=""
-            for HVUSER in `ps -eaf | grep libvirtd | grep -v grep | awk '{ print $1 }'`; do
-
-            while IFS= read -r VM; do
-                HVNAME=$( hostname -s )
-                VMID=$(echo $VM | $AWK '{ print $1 }')
-                VMNAME=$(echo $VM | $AWK '{ print $2 }')
-                VMSTAT=$(echo $VM | $AWK '{ print $3 }')
-                VMTITLE=$($CUT -c $((${TITLECOL}+1))- <<<"$VM")
-
-                $VIRSH -q dominfo ${VMNAME} > $vTmpResult
-                VMUUID=$(grep -i uuid       $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
-                VMAUTO=$(grep -i autostart  $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
-                VMPERS=$(grep -i persistent $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
-                rm -f $vTmpResult
-
-                jbody+="$sep"'{"{#VM.ID}":"'"${VMID}"'","{#VM.NAME}":"'"${VMNAME}"'","{#VM.UUID}":"'"${VMUUID}"'","{#VM.STAT}":"'"${VMSTAT}"'",' 
-                jbody+='"{#VM.AUTOSTART}":"'"${VMAUTO}"'","{#VM.PERSISTENT}":"'"${VMPERS}"'",'
-                jbody+='"{#HV.USER}":"'"$HVUSER"'","{#HV.NAME}":"'"${HVNAME}"'"}'
-                sep=", "$'\n'
-            done <<< $( sudo -u $HVUSER $(which virsh) -q list --all --title)
-
-            done
-            echo "[ $jbody ]"
-        ;;
-
+        # --------------------------------------------------------
+        # LLD Discovery methods
+        # --------------------------------------------------------
         net.if.discovery)
             jbody=""
             sep=""
@@ -140,10 +102,6 @@ function _param {
             echo "[ $jbody ]"
         ;;
 
-        vfs.fs.get)
-            $VIRSH -q guestinfo --filesystem $ZABBIX_DOMAIN | $EGREP "fs\.${ZABBIX_OPTION}\."
-        ;;
-
         vfs.dev.discovery)
             jbody=""
             sep=""
@@ -155,6 +113,10 @@ function _param {
             done <<< $($VIRSH -q domblklist $ZABBIX_DOMAIN)
             echo "[ $jbody ]"
         ;;
+
+        # --------------------------------------------------------
+        # Getters
+        # --------------------------------------------------------
 
         # Combined JSON for LLD and statistics for block devices (disks)
         blk.stats.get)
@@ -193,6 +155,10 @@ function _param {
             done
             rm -f $vTmpResult
             echo "[ $jbody ]"
+        ;;
+
+        vfs.fs.get)
+            $VIRSH -q guestinfo --filesystem $ZABBIX_DOMAIN | $EGREP "fs\.${ZABBIX_OPTION}\."
         ;;
 
         net.stats.get)
@@ -242,7 +208,7 @@ function _param {
                 jbody+="$sep"'{"id":"'"${VMID}"'","name":"'"${VMNAME}"'","uuid":"'"${VMUUID}"'","stat":"'"${VMSTAT}"'",' 
                 jbody+='"autostart":"'"${VMAUTO}"'","title":"'"${VMTITLE}"'","persistent":"'"${VMPERS}"'","hv.name":"'"${HVNAME}"'"}'
                 sep=", "$'\n'
-            done <<< $($VIRSH list --all --title | head -n -1 | tail -n +3)
+            done <<< $($VIRSH -q list --all --title)
             echo "[ $jbody ]"
         ;;
 
@@ -279,6 +245,9 @@ function _param {
             echo "[ $jbody ]"
         ;;
 
+        # --------------------------------------------------------
+        # Direct methods
+        # --------------------------------------------------------
         cpu.num)
             $VIRSH -q vcpucount $ZABBIX_DOMAIN | $EGREP "current\s+live" | awk '{ print $3 }'
         ;;
@@ -325,16 +294,8 @@ function _param {
 
 }
 
-
 ###
 ##############################################
-if [ "$ZABBIX_COMMAND" = "all" ] ; then
-  for x in status version nodeinfo \
-           nodecpustats nodememstats \
-           uptime sysinfo
-  do
-    _param $x HEAD
-  done
-else
-  _param $ZABBIX_COMMAND $ZABBIX_OPTION
-fi
+
+_param $ZABBIX_COMMAND $ZABBIX_OPTION
+

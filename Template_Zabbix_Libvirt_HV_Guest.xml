@@ -109,7 +109,7 @@ To use this template as manually linked to a host:
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodecpustats.get]</key>
+                        <key>libvirt.hv[nodecpu.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
@@ -144,7 +144,7 @@ To use this template as manually linked to a host:
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodecpustats.get]</key>
+                        <key>libvirt.hv[nodecpu.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
@@ -196,7 +196,7 @@ To use this template as manually linked to a host:
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodecpustats.get]</key>
+                        <key>libvirt.hv[nodecpu.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
@@ -279,7 +279,7 @@ To use this template as manually linked to a host:
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodecpustats.get]</key>
+                        <key>libvirt.hv[nodecpu.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
@@ -603,7 +603,7 @@ A high pages_sharing/pages_shared ratio signifies that most of the identified sh
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodememstats.get]</key>
+                        <key>libvirt.hv[nodemem.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
@@ -715,7 +715,7 @@ A high pages_sharing/pages_shared ratio signifies that most of the identified sh
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodememstats.get]</key>
+                        <key>libvirt.hv[nodemem.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
@@ -747,12 +747,255 @@ A high pages_sharing/pages_shared ratio signifies that most of the identified sh
                         </step>
                     </preprocessing>
                     <master_item>
-                        <key>libvirt.hv[nodememstats.get]</key>
+                        <key>libvirt.hv[nodemem.stats.get]</key>
                     </master_item>
                     <tags>
                         <tag>
                             <tag>component</tag>
                             <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>5ac4b5bb4b6e4c4ebffec196d61c4ead</uuid>
+                    <name>Hypervisor network: muticast packets</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.multicast</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..multicast.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>ade7cf3705744e96adf79dbd12053b7c</uuid>
+                    <name>Hypervisor network: Bytes received</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.rx_bytes</key>
+                    <units>Bps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..rx_bytes.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>225a1e8239464792bbf0f3ef06f3e856</uuid>
+                    <name>Hypervisor network: Inbound packets discarded</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.rx_dropped</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..rx_dropped.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>5247bdec762d460c893c2c3643dd69ef</uuid>
+                    <name>Hypervisor network: Inbound packets with errors</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.rx_errors</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..rx_errors.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>64a1d67054794f7aa933bf380823f48b</uuid>
+                    <name>Hypervisor network: Inbound packets with errors</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.rx_packets</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..rx_packets.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>a51204c7178b4768ac3f33f1485a4c84</uuid>
+                    <name>Hypervisor network: Bytes sent</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.tx_bytes</key>
+                    <units>Bps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..tx_bytes.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>ea694f3f90774c57a71d4afbc6131074</uuid>
+                    <name>Hypervisor network: Outbound packets discarded</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.tx_dropped</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..tx_dropped.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>0d2997e1609c4b2da98272dc0d7a120d</uuid>
+                    <name>Hypervisor network: Outbound packets with errors</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.tx_errors</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..tx_errors.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>69e381f5c1e848dc98d3af0bbb3f7e32</uuid>
+                    <name>Hypervisor network: Outbound packets</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.hv.net.tx_packets</key>
+                    <units>pps</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$..tx_packets.sum()</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
                         </tag>
                     </tags>
                 </item>
@@ -832,7 +1075,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                 <item>
                     <uuid>7d9d5f30681b49d1b0764f51c3760547</uuid>
                     <name>HV: Get CPU data</name>
-                    <key>libvirt.hv[nodecpustats.get]</key>
+                    <key>libvirt.hv[nodecpu.stats.get]</key>
                     <delay>5m</delay>
                     <history>0</history>
                     <value_type>CHAR</value_type>
@@ -862,11 +1105,26 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                 <item>
                     <uuid>593e14229c6f46b09e8479c47f3fff87</uuid>
                     <name>HV: Get memory data</name>
-                    <key>libvirt.hv[nodememstats.get]</key>
+                    <key>libvirt.hv[nodemem.stats.get]</key>
                     <delay>2h</delay>
                     <history>0</history>
                     <value_type>CHAR</value_type>
                     <description>Output of virsh nodememstats command</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>raw</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>b3fe471e81f64a8da34be99f8e9823ce</uuid>
+                    <name>HV: Get pool data</name>
+                    <key>libvirt.hv[pool.stats.get]</key>
+                    <delay>15m</delay>
+                    <history>1d</history>
+                    <value_type>TEXT</value_type>
+                    <description>Get hypervisor disk pools statistics</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -949,249 +1207,6 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                         </tag>
                     </tags>
                 </item>
-                <item>
-                    <uuid>5ac4b5bb4b6e4c4ebffec196d61c4ead</uuid>
-                    <name>Hypervisor network: muticast packets</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.multicast</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.multicast.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>ade7cf3705744e96adf79dbd12053b7c</uuid>
-                    <name>Hypervisor network: Bytes received</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.rx_bytes</key>
-                    <units>Bps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.rx_bytes.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>225a1e8239464792bbf0f3ef06f3e856</uuid>
-                    <name>Hypervisor network: Inbound packets discarded</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.rx_dropped</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.rx_dropped.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>5247bdec762d460c893c2c3643dd69ef</uuid>
-                    <name>Hypervisor network: Inbound packets with errors</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.rx_errors</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.rx_errors.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>64a1d67054794f7aa933bf380823f48b</uuid>
-                    <name>Hypervisor network: Inbound packets with errors</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.rx_packets</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.rx_packets.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>a51204c7178b4768ac3f33f1485a4c84</uuid>
-                    <name>Hypervisor network: Bytes sent</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.tx_bytes</key>
-                    <units>Bps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.tx_bytes.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>ea694f3f90774c57a71d4afbc6131074</uuid>
-                    <name>Hypervisor network: Outbound packets discarded</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.tx_dropped</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.tx_dropped.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>0d2997e1609c4b2da98272dc0d7a120d</uuid>
-                    <name>Hypervisor network: Outbound packets with errors</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.tx_errors</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.tx_errors.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
-                    <uuid>69e381f5c1e848dc98d3af0bbb3f7e32</uuid>
-                    <name>Hypervisor network: Outbound packets</name>
-                    <type>DEPENDENT</type>
-                    <key>libvirt.net.stats.tx_packets</key>
-                    <units>pps</units>
-                    <preprocessing>
-                        <step>
-                            <type>JSONPATH</type>
-                            <parameters>
-                                <parameter>$.kernel.*.tx_packets.sum()</parameter>
-                            </parameters>
-                        </step>
-                        <step>
-                            <type>CHANGE_PER_SECOND</type>
-                        </step>
-                    </preprocessing>
-                    <master_item>
-                        <key>libvirt.hv[net.stats.get]</key>
-                    </master_item>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>network</value>
-                        </tag>
-                    </tags>
-                </item>
             </items>
             <discovery_rules>
                 <discovery_rule>
@@ -1210,106 +1225,10 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     </item_prototypes>
                 </discovery_rule>
                 <discovery_rule>
-                    <uuid>279700a611624e098d61e259e1169f24</uuid>
-                    <name>Network interface discovery</name>
-                    <key>libvirt.hv[net.if.discovery]</key>
-                    <delay>2h</delay>
-                    <description>Discovery of Libvirt hypervisor network interfaces.</description>
-                    <item_prototypes>
-                        <item_prototype>
-                            <uuid>24ea632388bb41ec8d4f2a59d915a40c</uuid>
-                            <name>Hypervisor: [{#IFNAME}] network interface speed</name>
-                            <key>libvirt.hv[net.if.linkspeed,{#IFNAME}]</key>
-                            <units>bps</units>
-                            <description>Libvirt hypervisor network interface speed.</description>
-                            <preprocessing>
-                                <step>
-                                    <type>MULTIPLIER</type>
-                                    <parameters>
-                                        <parameter>1000000</parameter>
-                                    </parameters>
-                                </step>
-                            </preprocessing>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>network</value>
-                                </tag>
-                                <tag>
-                                    <tag>interface</tag>
-                                    <value>{#IFNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                    </item_prototypes>
-                </discovery_rule>
-                <discovery_rule>
-                    <uuid>71f97a48b296498791577edf34e6c88f</uuid>
-                    <name>Storage Pool</name>
-                    <key>libvirt.hv[pool.discovery, {#LIBVIRT.USER}]</key>
-                    <delay>2h</delay>
-                    <item_prototypes>
-                        <item_prototype>
-                            <uuid>3f3021637c044affa28da3852dbd9f5d</uuid>
-                            <name>HV [{#LIBVIRT.USER}] pool [{#POOLNAME}]: Free space</name>
-                            <key>libvirt.hv[pool.free, {#POOLNAME},{#LIBVIRT.USER}]</key>
-                            <delay>20m</delay>
-                            <units>B</units>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>pool</value>
-                                </tag>
-                                <tag>
-                                    <tag>pool</tag>
-                                    <value>{#POOLNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>0becac32b6ec4c2fa0f7237f87076010</uuid>
-                            <name>HV {#LIBVIRT.USER} pool [{#POOLNAME}]: Free space (percentage)</name>
-                            <key>libvirt.hv[pool.pfree, {#POOLNAME},{#LIBVIRT.USER}]</key>
-                            <delay>20m</delay>
-                            <units>%</units>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>pool</value>
-                                </tag>
-                                <tag>
-                                    <tag>pool</tag>
-                                    <value>{#POOLNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                        <item_prototype>
-                            <uuid>5121699db5614a6c979e5310e5afc46d</uuid>
-                            <name>HV [{#LIBVIRT.USER}] pool [{#POOLNAME}]: Total size</name>
-                            <key>libvirt.hv[pool.size, {#POOLNAME}, {#LIBVIRT.USER}]</key>
-                            <delay>20m</delay>
-                            <units>B</units>
-                            <tags>
-                                <tag>
-                                    <tag>component</tag>
-                                    <value>pool</value>
-                                </tag>
-                                <tag>
-                                    <tag>pool</tag>
-                                    <value>{#POOLNAME}</value>
-                                </tag>
-                            </tags>
-                        </item_prototype>
-                    </item_prototypes>
-                    <parent_discovery_rule>
-                        <key>libvirt.hv[discovery]</key>
-                    </parent_discovery_rule>
-                </discovery_rule>
-                <discovery_rule>
                     <uuid>b6ae41dd5f8c44999783bafad845313f</uuid>
                     <name>Libvirt VM discovery</name>
-                    <key>libvirt.vm[discovery]</key>
-                    <delay>1h</delay>
+                    <key>libvirt.hv[vm.discovery]</key>
+                    <delay>2h</delay>
                     <filter>
                         <evaltype>AND</evaltype>
                         <conditions>
@@ -1360,6 +1279,265 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             </macros>
                         </host_prototype>
                     </host_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>279700a611624e098d61e259e1169f24</uuid>
+                    <name>Network interface discovery</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.net.if.discovery</key>
+                    <description>Discovery hypervisor network interfaces.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>24ea632388bb41ec8d4f2a59d915a40c</uuid>
+                            <name>Hypervisor: [{#IFNAME}] network interface speed</name>
+                            <key>libvirt.hv[net.if.linkspeed,root,{#IFNAME}]</key>
+                            <delay>15m</delay>
+                            <units>bps</units>
+                            <description>Libvirt hypervisor network interface speed.</description>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <parameters>
+                                        <parameter>1000000</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                                    <parameters>
+                                        <parameter>1d</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>interface</tag>
+                                    <value>{#IFNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>libvirt.hv[net.stats.get]</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#IFNAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>b1f1b92836bf4552aa4b458208b5e73c</uuid>
+                    <name>Libvirt  pool discovery</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.pool.discovery</key>
+                    <description>Discovery of disk pools in all hypervisors in host (users with VM)</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>fa3a9cd170504441af250200230f57f5</uuid>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: Allocation</name>
+                            <type>DEPENDENT</type>
+                            <key>pool.allocation[{#POOLUUID}]</key>
+                            <units>B</units>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.uuid==&quot;{#POOLUUID}&quot;)].allocation.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.hv[pool.stats.get]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>pool</value>
+                                </tag>
+                                <tag>
+                                    <tag>pool</tag>
+                                    <value>{#HV.USER}/{#POOLNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>47a09001043e404d8c886208a8d86d67</uuid>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: Autostart</name>
+                            <type>DEPENDENT</type>
+                            <key>pool.autostart[{#POOLUUID}]</key>
+                            <value_type>CHAR</value_type>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.uuid==&quot;{#POOLUUID}&quot;)].autostart.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.hv[pool.stats.get]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>pool</value>
+                                </tag>
+                                <tag>
+                                    <tag>pool</tag>
+                                    <value>{#HV.USER}/{#POOLNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>87ed415892b14cabbb0b7739d49384f1</uuid>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: Available</name>
+                            <type>DEPENDENT</type>
+                            <key>pool.available[{#POOLUUID}]</key>
+                            <units>B</units>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.uuid==&quot;{#POOLUUID}&quot;)].free.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.hv[pool.stats.get]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>pool</value>
+                                </tag>
+                                <tag>
+                                    <tag>pool</tag>
+                                    <value>{#HV.USER}/{#POOLNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>a1abd964fac04cd49f80a1a747fed6de</uuid>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: Capacity</name>
+                            <type>DEPENDENT</type>
+                            <key>pool.capacity[{#POOLUUID}]</key>
+                            <units>B</units>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.uuid==&quot;{#POOLUUID}&quot;)].capacity.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.hv[pool.stats.get]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>pool</value>
+                                </tag>
+                                <tag>
+                                    <tag>pool</tag>
+                                    <value>{#HV.USER}/{#POOLNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>17403bfffbda4c10abb620cde388268d</uuid>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: Available (percent)</name>
+                            <type>DEPENDENT</type>
+                            <key>pool.pfree[{#POOLUUID}]</key>
+                            <units>%</units>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.uuid==&quot;{#POOLUUID}&quot;)].pfree.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.hv[pool.stats.get]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>pool</value>
+                                </tag>
+                                <tag>
+                                    <tag>pool</tag>
+                                    <value>{#HV.USER}/{#POOLNAME}</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>fb581ebd9a3d4475a985bac4b80c93ed</uuid>
+                                    <expression>last(/LibVirt KVM/pool.pfree[{#POOLUUID}]) &lt; 10</expression>
+                                    <name>Pool [{#HV.USER}/{#POOLNAME}]: Available &lt; 10%</name>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>fd26d02153e14ba8a152ef1c01e09c2b</uuid>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: State</name>
+                            <type>DEPENDENT</type>
+                            <key>pool.state[{#POOLUUID}]</key>
+                            <value_type>CHAR</value_type>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <parameters>
+                                        <parameter>$.[?(@.uuid==&quot;{#POOLUUID}&quot;)].state.first()</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>libvirt.hv[pool.stats.get]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>pool</value>
+                                </tag>
+                                <tag>
+                                    <tag>pool</tag>
+                                    <value>{#HV.USER}/{#POOLNAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <trigger_prototypes>
+                        <trigger_prototype>
+                            <uuid>3096c87bdbb3464296ba2cc23d3e5187</uuid>
+                            <expression>last(/LibVirt KVM/pool.state[{#POOLUUID}]) &lt;&gt; &quot;running&quot; and last(/LibVirt KVM/pool.autostart[{#POOLUUID}]) = &quot;yes&quot;</expression>
+                            <name>Pool [{#HV.USER}/{#POOLNAME}]: State {ITEM.VALUE}</name>
+                            <priority>WARNING</priority>
+                        </trigger_prototype>
+                    </trigger_prototypes>
+                    <master_item>
+                        <key>libvirt.hv[pool.stats.get]</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#HV.USER}</lld_macro>
+                            <path>$.hvuser</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#POOLNAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#POOLUUID}</lld_macro>
+                            <path>$.uuid</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
                 </discovery_rule>
             </discovery_rules>
             <tags>
@@ -2279,7 +2457,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.0</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.multicast</key>
+                                                <key>libvirt.hv.net.multicast</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2336,7 +2514,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.0</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.rx_bytes</key>
+                                                <key>libvirt.hv.net.rx_bytes</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2344,7 +2522,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.1</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.tx_bytes</key>
+                                                <key>libvirt.hv.net.tx_bytes</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2386,7 +2564,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.hv[net.if.linkspeed,{#IFNAME}]</key>
+                                                <key>libvirt.hv[net.if.linkspeed,root,{#IFNAME}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2433,7 +2611,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.0</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.rx_dropped</key>
+                                                <key>libvirt.hv.net.rx_dropped</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2441,7 +2619,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.1</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.tx_dropped</key>
+                                                <key>libvirt.hv.net.tx_dropped</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2499,7 +2677,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.0</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.rx_errors</key>
+                                                <key>libvirt.hv.net.rx_errors</key>
                                             </value>
                                         </field>
                                         <field>
@@ -2507,7 +2685,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                                             <name>ds.0.itemids.1</name>
                                             <value>
                                                 <host>LibVirt KVM</host>
-                                                <key>libvirt.net.stats.tx_errors</key>
+                                                <key>libvirt.hv.net.tx_errors</key>
                                             </value>
                                         </field>
                                         <field>

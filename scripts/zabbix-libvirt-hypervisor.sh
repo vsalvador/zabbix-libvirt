@@ -3,7 +3,7 @@
 ## 30/August/2025
 #  (C) Vicente Salvador vsalvador@nabutek.com
 #
-#  30/08/2025 - Initial version
+#  10/04/2025 - Split IWA metrics to zabiwa to allow shc compiler to work
 #
 # Script to help collect information from Libvirt hypervisor using virsh command
 #
@@ -47,51 +47,24 @@ fi
 # Remove the temporary file when the script finish, with or without success.
 trap "rm -f $vTmpResult >/dev/null 2>&1 ; exit " 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 
-export vTmpResult="/tmp/zabbix_libvirt_kvm.$$.txt"
+export vTmpResult="/tmp/zabbix_libvirt_hv.$$.txt"
 
 export ZABBIX_COMMAND=$1
-export ZABBIX_OPTION=$2
-export VIRSH="sudo $(which virsh) -q"
-if [ $# -eq 3 ]; then
-   export VIRSH="sudo -u ${3} $(which virsh) -q"
+export ZABBIX_OPTION=$3
+export VIRSH="sudo $(which virsh)"
+if [ $# -ge 2 ]; then
+   export VIRSH="sudo -u ${2} $(which virsh)"
 fi
-
-function show_idented {
-echo "Resultado 1" > /tmp/file
-echo "Resultado 2" >> /tmp/file
-echo "Resultado 3" >> /tmp/file
-( 
-    first="Printing Line of the file:"
-    IFS=
-    read -r line
-    printf "%*s %s\n" ${#first} "$first" "$line"
-    while read -r line; do 
-        printf "%*s %s\n" ${#first} "" "$line"
-    done 
-) < /tmp/file
-
-}
-
-function indent_content2 {
-    cat ~/.bashrc | paste /dev/null - | expand -2
-}
 
 function _param {
     vCommand=${1}
     vOption=${2}
-    vConnURI=${3}
-
-    function header {
-        if [ "$vOption" = "HEAD" ]; then
-            echo_no_nl "${vCommand} : "
-        fi
-    }
 
     case $vCommand in
-        status)
-            show_idented
-        ;;
 
+        # --------------------------------------------------------
+        # LLD Discovery methods
+        # --------------------------------------------------------
         discovery)
             jbody=""
             sep=""
@@ -102,58 +75,83 @@ function _param {
             echo "[ $jbody ]"
         ;;
 
-        net.if.discovery)
+        vm.discovery)
+            # We need title headers to know where VM title starts
+            HEADER=$($VIRSH list --all --title | head -n +1 )
+            PREFIX="${HEADER%%Title*}"
+            TITLECOL=${#PREFIX}
+
             jbody=""
             sep=""
-            while IFS= read -r POOL; do
-                IFNAME="$(echo $POOL | $AWK '{ print $1 }')"
-                IFSTAT="$(echo $POOL | $AWK '{ print $2 }')"
-                IFMAC="$(echo $POOL | $AWK '{ print $3 }')"
-                jbody+="$sep"'{"{#IFNAME}":"'"${IFNAME}"'","{#IFMACADDR}":"'"${IFMAC}"'"}'
-                sep=", "
-            done <<< $($VIRSH iface-list)
+            for HVUSER in `ps -eaf | grep libvirtd | grep -v grep | awk '{ print $1 }'`; do
+
+            while IFS= read -r VM; do
+                HVNAME=$( hostname -s )
+                VMID=$(echo $VM | $AWK '{ print $1 }')
+                VMNAME=$(echo $VM | $AWK '{ print $2 }')
+                VMSTAT=$(echo $VM | $AWK '{ print $3 }')
+                VMTITLE=$($CUT -c $((${TITLECOL}+1))- <<<"$VM")
+
+                $VIRSH -q dominfo ${VMNAME} > $vTmpResult
+                VMUUID=$(grep -i uuid       $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
+                VMAUTO=$(grep -i autostart  $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
+                VMPERS=$(grep -i persistent $vTmpResult | $AWK -F: '{ gsub(/^\s+/, "", $2); print $2 }')
+                rm -f $vTmpResult
+
+                jbody+="$sep"'{"{#VM.ID}":"'"${VMID}"'","{#VM.NAME}":"'"${VMNAME}"'","{#VM.UUID}":"'"${VMUUID}"'","{#VM.STAT}":"'"${VMSTAT}"'",' 
+                jbody+='"{#VM.AUTOSTART}":"'"${VMAUTO}"'","{#VM.PERSISTENT}":"'"${VMPERS}"'",'
+                jbody+='"{#HV.USER}":"'"$HVUSER"'","{#HV.NAME}":"'"${HVNAME}"'"}'
+                sep=", "$'\n'
+            done <<< $( sudo -u $HVUSER $(which virsh) -q list --all --title)
+
+            done
             echo "[ $jbody ]"
         ;;
-        net.if.linkspeed)
-            $VIRSH iface-dumpxml $vOption > $vTmpResult
-            if [ $? -ne 0 ]; then
-                echo "<interface><bridge><interface><link speed='0' /></interface></bridge></interface>" >> $vTmpResult
-            fi
-            SPEED=$(xmllint --xpath "string(/interface/bridge/interface/link/@speed)" $vTmpResult)
-            [ "$SPEED" = "" ] && echo "99000" || echo $SPEED
-            rm -f $vTmpResult
+
+        # --------------------------------------------------------
+        # Getters
+        # --------------------------------------------------------
+        net.stats.get)
+            ifstat --json $(  $VIRSH -q iface-list | awk '{ print $1 }' | paste -s -d' ' ) | \
+            jq '.kernel | to_entries | map({name: .key} + .value)'
+            ## jq '.kernel |= with_entries(.value.name = .key)'
         ;;
 
-        pool.discovery)
+        pool.stats.get)
             jbody=""
             sep=""
-            while IFS= read -r POOL; do
-                UUID="${POOL%% *}"
-                NAME="$(echo $POOL | $AWK '{ print $2 }')"
-                jbody+="$sep"'{"{#POOLNAME}":"'"${NAME}"'","{#POOLUUID}":"'"${UUID}"'"}'
-                sep=", "
-            done <<< $($VIRSH pool-list --uuid --name)
+            for HVUSER in `ps -eaf | grep libvirtd | grep -v grep | awk '{ print $1 }'`; do
+                VIRSH="sudo -u $HVUSER $(which virsh)"
+
+                while IFS= read -r POOLNAME; do
+                    [ "$POOLNAME" = "" ] && continue;
+
+                    NAME="${POOLNAME%% *}"
+
+                    $VIRSH pool-info "${NAME}" --bytes  > $vTmpResult
+                    UUID=$(grep "UUID:" $vTmpResult | awk '{ print $2 }')
+                    STAT=$(grep "State:" $vTmpResult | awk '{ print $2 }')
+                    AUTO=$(grep "Autostart:" $vTmpResult | awk '{ print $2 }')
+                    SIZE=$(grep "Capacity:" $vTmpResult | awk '{ print $2 }')
+                    FREE=$(grep "Available:" $vTmpResult | awk '{ print $2 }')
+                    ALLOC=$(grep "Allocation:" $vTmpResult | awk '{ print $2 }')
+                    PFREE=$(( FREE * 100 / SIZE ))
+                    rm -f $vTmpResult
+
+                    jbody+="${sep}{"
+                    jbody+="\"name\":\"${NAME}\",\"hvuser\":\"${HVUSER}\",\"uuid\":\"${UUID}\",\"state\":\"${STAT}\",\"autostart\":\"${AUTO}\","
+                    jbody+="\"capacity\":\"${SIZE}\",\"allocation\":\"${ALLOC}\",\"free\":\"${FREE}\",\"pfree\":\"${PFREE}\""
+                    jbody+="}"
+                    sep=", "
+                done <<< $($VIRSH pool-list --name --all)
+            done
+
             echo "[ $jbody ]"
-        ;;
-
-        pool.size)
-            $VIRSH pool-info ${vOption} --bytes | grep "Capacity:" | awk '{ print $2 }'
-        ;;
-
-        pool.free)
-            $VIRSH pool-info ${vOption} --bytes | grep "Available:" | awk '{ print $2 }'
-        ;;
-
-        pool.pfree)
-            TOTAL=$($VIRSH pool-info ${vOption} --bytes | grep "Capacity:" | awk '{ print $2 }')
-            FREE=$($VIRSH pool-info ${vOption} --bytes | grep "Available:" | awk '{ print $2 }')
-            echo $(( $FREE * 100 / $TOTAL ))
         ;;
 
         ksm.get)
             PAGESIZE=$(getconf PAGESIZE)
 
-            header
             # KSM can save memory by merging identical pages, but also can consume additional memory, 
             # because it needs to generate a number of rmap_items to save each scanned page’s brief rmap information. 
             # Some of these pages may be merged, but some may not be abled to be merged after being checked several times, which are unprofitable memory consumed.
@@ -178,33 +176,26 @@ function _param {
             echo ksm_zero_pages: $(cat /sys/kernel/mm/ksm/ksm_zero_pages)
             echo ksm_zero_memory:$(($PAGESIZE * $(cat /sys/kernel/mm/ksm/ksm_zero_pages) ))
 
-      
-#When use_zero_pages is/was enabled, the sum of pages_sharing + ksm_zero_pages represents the actual number of pages saved by KSM. if use_zero_pages has never been enabled, ksm_zero_pages is 0.
 
-##A high ratio of pages_sharing to pages_shared indicates good sharing, but a high ratio of pages_unshared to pages_sharing indicates wasted effort. pages_volatile embraces several different kinds of activity, but a high proportion there would also indicate poor use of madvise MADV_MERGEABLE.
-
-#The maximum possible pages_sharing/pages_shared ratio is limited by the max_page_sharing tunable. To increase the ratio max_page_sharing must be increased accordingly.
-
+            # When use_zero_pages is/was enabled, the sum of pages_sharing + ksm_zero_pages represents
+            # the actual number of pages saved by KSM. if use_zero_pages has never been enabled, ksm_zero_pages is 0.
+            # A high ratio of pages_sharing to pages_shared indicates good sharing, but a high ratio of
+            # pages_unshared to pages_sharing indicates wasted effort. pages_volatile embraces several different
+            # kinds of activity, but a high proportion there would also indicate poor use of madvise MADV_MERGEABLE.
         ;;
         version.get)
-            header
             $VIRSH version 
         ;;
         nodeinfo.get)
-            header
             $VIRSH nodeinfo 
         ;;
-        nodecpustats.get)
-            header
+        nodecpu.stats.get)
             $VIRSH nodecpustats 
         ;;
-        nodememstats.get)
-            header
+        nodemem.stats.get)
             $VIRSH nodememstats 
         ;;
         sysinfo.get)
-            header
-
             $VIRSH sysinfo > $vTmpResult
 
             echo "bios.version:    $(xmllint --xpath "string(/sysinfo/bios/entry[@name='version'])" $vTmpResult)"
@@ -216,40 +207,45 @@ function _param {
             echo "processor.version:   $(xmllint --xpath "string(/sysinfo/processor/entry[@name='version'])" $vTmpResult)"
             echo "processor.max_speed: $(xmllint --xpath "string(/sysinfo/processor/entry[@name='max_speed'])" $vTmpResult)"
             rm -f $vTmpResult
-
         ;;
+
+        # --------------------------------------------------------
+        # Network methods
+        # --------------------------------------------------------
+        net.if.linkspeed)
+            $VIRSH iface-dumpxml $vOption > $vTmpResult
+            if [ $? -ne 0 ]; then
+                echo "<interface><bridge><interface><link speed='0' /></interface></bridge></interface>" >> $vTmpResult
+            fi
+            SPEED=$(xmllint --xpath "string(/interface/bridge/interface/link/@speed)" $vTmpResult)
+            [ "$SPEED" = "" ] && echo "99000" || echo $SPEED
+            rm -f $vTmpResult
+        ;;
+
+        # --------------------------------------------------------
+        # System and VM methods
+        # --------------------------------------------------------
         uptime)
-            header
             ${AWK} '{print $1}' /proc/uptime
         ;;
         vmnum)
-            header
             TOTALVM=0
             for HVUSER in `ps -eaf | grep libvirtd | grep -v grep | awk '{ print $1 }'`; do
-               NUMVM=`sudo -u $HVUSER $(which virsh) -q list --all --name | wc -l`
+               NUMVM=`sudo -u $HVUSER $(which virsh) list --all --name | head -n -1 | wc -l`
                TOTALVM=$(( $TOTALVM + $NUMVM ))
             done
             echo $TOTALVM
         ;;
-#        vm.number)
-#            $VIRSH list --all --name
-#        ;;
+        vm.number)
+            $VIRSH -q list --all --name | wc -l
+        ;;
+
         *) echo "ZBX_NOTSUPPORTED"
         ;;
     esac
-
 }
-
 
 ###
 ##############################################
-if [ "$ZABBIX_COMMAND" = "all" ] ; then
-  for x in status version nodeinfo \
-           nodecpustats nodememstats \
-           uptime sysinfo
-  do
-    _param $x HEAD
-  done
-else
-  _param $ZABBIX_COMMAND $ZABBIX_OPTION
-fi
+
+_param $ZABBIX_COMMAND $ZABBIX_OPTION
