@@ -57,6 +57,8 @@ Tested on:
 ### On zabbix server
 
 * import templates (xml file)
+* create a host and use Zabbix agent connection
+* link libvirt KVM template to this hypervisor host
 
 # Template Libvirt KVM
 
@@ -81,25 +83,25 @@ Tested on:
 |Hypervisor CPU cores|<p>Number of physical CPU cores on the host. Physical CPU cores are the processors contained by a CPU package.</p>|`Calculated`|libvirt.hv.hw.cpu.num|
 |Hypervisor CPU threads per core|<p>Number of threads of each physical CPU on the host.</p>|`Dependent`|libvirt.hv.cpu.threads|
 |Hypervisor CPU threads|<p>Number of physical CPU threads on the host.</p>|`Dependent`|libvirt.hv.cpu.vnum|
-|Hypervisor CPU Idle Time|<p> </p>|`Dependent`|libvirt.hv.cpu.idle|
-|Hypervisor CPU IO Wait Time|<p> </p>|`Dependent`|libvirt.hv.cpu.iowait|
+|Hypervisor CPU Idle Time|<p>Seconds the CPU spends completely idle, with no active tasks or pending I/O operations. Sums all cores time in this state.</p>|`Dependent`|libvirt.hv.cpu.idle|
+|Hypervisor CPU IO Wait Time|<p>Seconds the CPU is idle but waiting for an input/output operation (like reading from or writing to a disk) to finish. Sums all cores time in this state.</p>|`Dependent`|libvirt.hv.cpu.iowait|
 |Hypervisor CPU IO Wait in percent|<p> </p>|`Calculated`|libvirt.hv.cpu.iowait.perf|
-|Hypervisor CPU System Time|<p> </p>|`Dependent`|libvirt.hv.cpu.system|
-|Hypervisor CPU User Time|<p> </p>|`Dependent`|libvirt.hv.cpu.user|
-|Hypervisor CPU Usage in percent|<p> </p>|`Calculated`|libvirt.hv.cpu.usage.perf|
+|Hypervisor CPU System Time|<p>Seconds the CPU spends executing kernel-level tasks and system calls. Sums all cores time in this state.</p>|`Dependent`|libvirt.hv.cpu.system|
+|Hypervisor CPU User Time|<p>Seconds the CPU spends running user-level applications and processes. Sums all cores time in this state.</p>|`Dependent`|libvirt.hv.cpu.user|
+|Hypervisor CPU Usage in percent|<p>CPU user and system time in percent. 2 cores full working will get 200%.</p>|`Calculated`|libvirt.hv.cpu.usage.perf|
 |Hypervisor CPU current frequency|<p>The speed of the CPU cores. This is an average value if there are multiple speeds. The product of CPU frequency and number of cores is approximately equal to the sum of the MHz for all the individual cores on the host.</p>|`Dependent`|libvirt.hv.hw.cpu.freq|
 |Hpervisor CPU model|<p>The CPU model.</p>|`Dependent`|libvirt.hv.hw.cpu.model|
 |Hypervisor KSM % Merged pages|<p> </p>|`Calculated`|libvirt.hv.hw.ksm.merged.perf|
 |Hypervisor KSM general profit|<p> </p>|`Dependent`|libvirt.hv.hw.ksm.profit|
-|Hypervisor KSM shared memory|<p> </p>|`Dependent`|libvirt.hv.hw.ksm.shared|
-|Hypervisor KSM sharing memory|<p> </p>|`Dependent`|libvirt.hv.hw.ksm.sharing|
+|Hypervisor KSM shared memory|<p>How many shared memory are being used.</p>|`Dependent`|libvirt.hv.hw.ksm.shared|
+|Hypervisor KSM sharing memory|<p>How many more sites are sharing them i.e. how much saved</p>|`Dependent`|libvirt.hv.hw.ksm.sharing|
 |Hypervisor KSM eficiency ratio of page sharing|<p> </p>|`Calculated`|libvirt.hv.hw.ksm.sharing.perf|
-|Hypervisor KSM unshared memory|<p> </p>|`Dependent`|libvirt.hv.hw.ksm.unshared|
-|Hypervisor KSM volatile memory|<p> </p>|`Dependent`|libvirt.hv.hw.ksm.volatile|
-|Hypervisor memory total|<p> </p>|`Dependent`|libvirt.hv.hw.memory|
+|Hypervisor KSM unshared memory|<p>How many memory unique but repeatedly checked for merging</p>|`Dependent`|libvirt.hv.hw.ksm.unshared|
+|Hypervisor KSM volatile memory|<p>How many memory changing too fast to be placed in a tree</p>|`Dependent`|libvirt.hv.hw.ksm.volatile|
+|Hypervisor memory total|<p>The physical memory size.</p>|`Dependent`|libvirt.hv.hw.memory|
 |Hypervisor Model|<p>The system model identification.</p>|`Dependent`|libvirt.hv.hw.model|
 |Hypervisor Bios UUID|<p>The hardware BIOS identification.</p>|`Dependent`|libvirt.hv.hw.uuid|
-|Hypervisor library|<p>QEMU library version</p>|`Dependent`|libvirt.hv.library|
+|Hypervisor library|<p>Libvirt hypervisor version</p>|`Dependent`|libvirt.hv.library|
 |Hypervisor memory cached|<p> </p>|`Dependent`|libvirt.hv.memory.cached|
 |Hypervisor memory free|<p>Physical free memory on the host.</p>|`Dependent`|libvirt.hv.memory.free|
 |Hypervisor network: muticast packets|<p> </p>|`Dependent`|libvirt.hv.net.multicast|
@@ -111,7 +113,7 @@ Tested on:
 |Hypervisor network: Outbound packets discarded|<p> </p>|`Dependent`|libvirt.hv.net.tx_dropped|
 |Hypervisor network: Outbound packets with errors|<p> </p>|`Dependent`|libvirt.hv.net.tx_errors|
 |Hypervisor network: Outbound packets|<p> </p>|`Dependent`|libvirt.hv.net.tx_packets|
-|Hypervisor version|<p> </p>|`Dependent`|libvirt.hv.version|
+|Hypervisor version|<p>The Running QEMU version.</p>|`Dependent`|libvirt.hv.version|
 |Hypervisor Uptime|<p>System uptime.</p>|`Zabbix agent`|libvirt.hv[uptime]|
 |Hypervisor number of guest VMs|<p> </p>|`Zabbix agent`|libvirt.hv[vmnum]|
 |HV: Get KSM data|<p> </p>|`Zabbix agent`|libvirt.hv[ksm.get]|
@@ -154,32 +156,32 @@ Tested on:
 |Name|Description|Type|Key and additional info|
 |----|-----------|----|----|
 |Hypervisor ping|<p>Hypervisor ping.</p>|`Simple check`|icmpping[]<p>Update: 2m</p>|
-|VM CPU haltpoll fail time|<p> </p>|`Dependent`|libvirt.vm.cpu.haltpoll.fail|
-|VM CPU haltpoll success time|<p> </p>|`Dependent`|libvirt.vm.cpu.haltpoll.success|
-|VM CPU system|<p> </p>|`Dependent`|libvirt.vm.cpu.system|
-|VM CPU usage|<p> </p>|`Dependent`|libvirt.vm.cpu.usage|
+|VM CPU haltpoll fail time|<p>CPU halt polling fail time spent.</p>|`Dependent`|libvirt.vm.cpu.haltpoll.fail|
+|VM CPU haltpoll success time|<p>CPU halt polling success time spent.</p>|`Dependent`|libvirt.vm.cpu.haltpoll.success|
+|VM CPU system|<p>System cpu time spent.</p>|`Dependent`|libvirt.vm.cpu.system|
+|VM CPU user|<p>User cpu time spent</p>|`Dependent`|libvirt.vm.cpu.user|
+|VM CPU usage|<p>Total cpu time spent for this domain.</p>|`Dependent`|libvirt.vm.cpu.usage|
 |VM CPU usage in percent|<p> </p>|`Calculated`|libvirt.vm.cpu.usage.perf|
-|VM CPU user|<p> </p>|`Dependent`|libvirt.vm.cpu.user|
-|Guest balloon memory available|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.available|
-|Guest balloon memory disk cache|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.diskcache|
+|Guest balloon memory available|<p>The amount of usable memory as seen by the domain.</p>|`Dependent`|libvirt.vm.guest.memory.size.available|
+|Guest balloon memory disk cache|<p>The amount of memory that can be reclaimed without additional I/O.</p>|`Dependent`|libvirt.vm.guest.memory.size.diskcache|
 |Guest balloon memory swapped|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.swapped|
-|Guest balloon memory unused|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.unused|
-|Guest balloon memory usable|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.usable|
-|Guest balloon memory current size|<p> </p>|`Dependent`|libvirt.vm.guest.memory.current|
-|Host balloon memory rss|<p> </p>|`Dependent`|libvirt.vm.memory.size.usage.host|
+|Guest balloon memory unused|<p>The amount of memory left unused by the system.</p>|`Dependent`|libvirt.vm.guest.memory.size.unused|
+|Guest balloon memory usable|<p>The amount of memory which can be reclaimed by balloon without causing host swapping</p>|`Dependent`|libvirt.vm.guest.memory.size.usable|
+|Guest balloon memory current size|<p>The memory in KiB currently used.</p>|`Dependent`|libvirt.vm.guest.memory.current|
+|Host balloon memory rss|<p>Resident Set Size of running domain's process.</p>|`Dependent`|libvirt.vm.memory.size.usage.host|
 |VM Guest Tools status|<p> </p>|`Zabbix agent`|libvirt.vm[tools, {$HV.USER},{$LIBVIRT.VM.UUID}]|
-|Snapshot count|<p> </p>|`Dependent`|libvirt.vm.snapshot.count|
-|Snapshot latest date|<p> </p>|`Dependent`|libvirt.vm.snapshot.latestdate|
-|Snapshot oldest date|<p> </p>|`Dependent`|libvirt.vm.snapshot.oldestdate|
-|Uptime of guest OS|<p> </p>|`Zabbix agent`|libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
-|VM Uptime|<p> </p>|`Zabbix agent`|libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|Snapshot count|<p>Snapshot count of the guest VM.</p>|`Dependent`|libvirt.vm.snapshot.count|
+|Snapshot latest date|<p>Latest snapshot date of the guest VM.</p>|`Dependent`|libvirt.vm.snapshot.latestdate|
+|Snapshot oldest date|<p>Oldest snapshot date of the guest VM.</p>|`Dependent`|libvirt.vm.snapshot.oldestdate|
+|Uptime of guest OS|<p>Boot uptime.</p>|`Zabbix agent`|libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Uptime|<p>System uptime.</p>|`Zabbix agent`|libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM state|<p> </p>|`Zabbix agent`|libvirt.vm[state,{$HV.USER},{$LIBVIRT.VM.UUID}]|
-|VM Get block stats|<p> </p>|`Zabbix agent`|libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
-|VM Number of virtual CPUs|<p> </p>|`Zabbix agent`|libvirt.vm[cpu.num, {$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Number of virtual CPUs|<p>How many CPUs has this domain</p>|`Zabbix agent`|libvirt.vm[cpu.num, {$HV.USER},{$LIBVIRT.VM.UUID}]|
 |Guest OS memory available in %|<p> </p>|`Zabbix agent`|vm.memory.size[pavailable]|
 |Guest OS memory used in %|<p> </p>|`Zabbix agent`|vm.memory.utilization|
+|VM Get block stats|<p> </p>|`Zabbix agent`|libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get domain stats|<p> </p>|`Zabbix agent`|libvirt.vm[dom.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
-|VM domain display|<p> </p>|`Zabbix agent`|libvirt.vm[domdisplay,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM domain display|<p>URI which can be used to connect to the graphical display of the domain.</p>|`Zabbix agent`|libvirt.vm[domdisplay,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM host name|<p> </p>|`Zabbix agent`|libvirt.vm[domhostname,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get filesystem stats|<p> </p>|`Zabbix agent`|libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get network stats|<p> </p>|`Zabbix agent`|libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
