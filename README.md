@@ -115,7 +115,7 @@ Tested on:
 |Hypervisor network: Outbound packets|<p>Acumulated packets sent by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.tx_packets|
 |Hypervisor version|<p>The Running QEMU version.</p>|`Dependent`|libvirt.hv.version|
 |Hypervisor Uptime|<p>System uptime.</p>|`Zabbix agent`|libvirt.hv[uptime]|
-|Hypervisor number of guest VMs|<p> </p>|`Zabbix agent`|libvirt.hv[vmnum]|
+|Hypervisor number of guest VMs|<p>Total number of guest domains present in server.</p>|`Zabbix agent`|libvirt.hv[vmnum]|
 |HV: Get KSM data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[ksm.get]|
 |HV: Get network data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[net.stats.get]|
 |HV: Get CPU data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[nodecpu.stats.get]|
@@ -169,20 +169,20 @@ Tested on:
 |Guest balloon memory usable|<p>The amount of memory which can be reclaimed by balloon without causing host swapping</p>|`Dependent`|libvirt.vm.guest.memory.size.usable|
 |Guest balloon memory current size|<p>The memory in KiB currently used.</p>|`Dependent`|libvirt.vm.guest.memory.current|
 |Host balloon memory rss|<p>Resident Set Size of running domain's process.</p>|`Dependent`|libvirt.vm.memory.size.usage.host|
-|VM Guest Tools status|<p> </p>|`Zabbix agent`|libvirt.vm[tools, {$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Guest Tools status|<p>Monitoring of the QEMU Guest Agent operational status for this domain.</p>|`Zabbix agent`|libvirt.vm[tools, {$HV.USER},{$LIBVIRT.VM.UUID}]|
 |Snapshot count|<p>Snapshot count of the guest VM.</p>|`Dependent`|libvirt.vm.snapshot.count|
 |Snapshot latest date|<p>Latest snapshot date of the guest VM.</p>|`Dependent`|libvirt.vm.snapshot.latestdate|
 |Snapshot oldest date|<p>Oldest snapshot date of the guest VM.</p>|`Dependent`|libvirt.vm.snapshot.oldestdate|
-|Uptime of guest OS|<p>Boot uptime.</p>|`Zabbix agent`|libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|Uptime of guest OS|<p>Total time elapsed since the last operating system boot-up (in seconds). Data is collected if Guest OS Add-ons (qemu-guest-agent) are installed, and guest-exec enabled in domain.</p>|`Zabbix agent`|libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Uptime|<p>System uptime.</p>|`Zabbix agent`|libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM state|<p> </p>|`Zabbix agent`|libvirt.vm[state,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Number of virtual CPUs|<p>How many CPUs has this domain</p>|`Zabbix agent`|libvirt.vm[cpu.num, {$HV.USER},{$LIBVIRT.VM.UUID}]|
 |Guest OS memory available in %|<p> </p>|`Zabbix agent`|vm.memory.size[pavailable]|
 |Guest OS memory used in %|<p> </p>|`Zabbix agent`|vm.memory.utilization|
+|VM domain display|<p>URI which can be used to connect to the graphical display of the domain.</p>|`Zabbix agent`|libvirt.vm[domdisplay,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM host name|<p>Domain host name.</p>|`Zabbix agent`|libvirt.vm[domhostname,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get block stats|<p> </p>|`Zabbix agent`|libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get domain stats|<p> </p>|`Zabbix agent`|libvirt.vm[dom.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
-|VM domain display|<p>URI which can be used to connect to the graphical display of the domain.</p>|`Zabbix agent`|libvirt.vm[domdisplay,{$HV.USER},{$LIBVIRT.VM.UUID}]|
-|VM host name|<p> </p>|`Zabbix agent`|libvirt.vm[domhostname,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get filesystem stats|<p> </p>|`Zabbix agent`|libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get network stats|<p> </p>|`Zabbix agent`|libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
 |VM Get snapshots|<p> </p>|`Zabbix agent`|libvirt.vm[snapshot.get, {$HV.USER},{$LIBVIRT.VM.UUID}]|
@@ -205,3 +205,9 @@ Tested on:
 |Disk device/block discovery|<p>Discovery of all disk devices.</p>|`Dependent`|libvirt.vm.blk.discovery|
 |Network device discovery|<p>Discovery of all network devices.</p>|`Dependent`|libvirt.vm.net.if.discovery|
 |Mounted filesystem discovery|<p>Discovery of all guest file systems.</p>|`Dependent`|libvirt.vm.fs.discovery|
+
+## Item prototypes for Disk device/block discovery
+
+## Item prototypes for Network device discovery
+
+## Item prototypes for Mounted filesystem discovery
