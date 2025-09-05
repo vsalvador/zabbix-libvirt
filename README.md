@@ -27,7 +27,10 @@ Tested on:
 
 * install required dependencies for shell commands
    ```sh
-   dnf install jq awk 
+   rpm -q jq      || dnf install jq
+   rpm -q awk     || dnf install awk
+   rpm -q grep    || dnf install grep
+   rpm -q libxml2 || dnf install libxml2  # xmllint
    ```
 
 * copy the file "userparameter-libvirt-hv.conf" into your zabbix include folder:
@@ -48,6 +51,7 @@ Tested on:
     zabbix ALL=(ALL) NOPASSWD: /usr/bin/virsh
     EOF
     ```
+
 * if domain OS is RHEL 9 or 10 (maybe applies to others), in the domain OS, edit /etc/sysconfig/qemu-ga and add guest-exec,guest-exec-status to the list of allowed rpcs in the FILTER_RPC_ARGS configuration parameter. This will allow to execute some items to get OS boottime. If security is a concern, do not change configuration and let this items fail.
 
 * reboot zabbix-agent service
@@ -105,7 +109,7 @@ Tested on:
 |Hypervisor library|<p>Libvirt hypervisor version</p>|`Dependent`|libvirt.hv.library|
 |Hypervisor memory cached|<p> </p>|`Dependent`|libvirt.hv.memory.cached|
 |Hypervisor memory free|<p>Physical free memory on the host.</p>|`Dependent`|libvirt.hv.memory.free|
-|Hypervisor network: muticast packets|<p> </p>|`Dependent`|libvirt.hv.net.multicast|
+|Hypervisor network: muticast packets|<p>Multicast packets sent by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.multicast|
 |Hypervisor network: Bytes received|<p>Acumulated bytes received by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.rx_bytes|
 |Hypervisor network: Inbound packets discarded|<p>Acumulated packets discarded when a device's reception buffers are full</p>|`Dependent`|libvirt.hv.net.rx_dropped|
 |Hypervisor network: Inbound packets with errors|<p>Acumulated packets received with errors by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.rx_errors|
@@ -165,7 +169,7 @@ Tested on:
 |VM CPU usage in percent|<p> </p>|`Calculated`|libvirt.vm.cpu.usage.perf|
 |Guest balloon memory available|<p>The amount of usable memory as seen by the domain.</p>|`Dependent`|libvirt.vm.guest.memory.size.available|
 |Guest balloon memory disk cache|<p>The amount of memory that can be reclaimed without additional I/O.</p>|`Dependent`|libvirt.vm.guest.memory.size.diskcache|
-|Guest balloon memory swapped|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.swapped|
+|Guest balloon memory swapped|<p>The amount of memory written out to swap space</p>|`Dependent`|libvirt.vm.guest.memory.size.swapped|
 |Guest balloon memory unused|<p>The amount of memory left unused by the system.</p>|`Dependent`|libvirt.vm.guest.memory.size.unused|
 |Guest balloon memory usable|<p>The amount of memory which can be reclaimed by balloon without causing host swapping</p>|`Dependent`|libvirt.vm.guest.memory.size.usable|
 |Guest balloon memory current size|<p>The memory in KiB currently used.</p>|`Dependent`|libvirt.vm.guest.memory.current|
