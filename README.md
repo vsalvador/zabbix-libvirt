@@ -48,6 +48,7 @@ Tested on:
     zabbix ALL=(ALL) NOPASSWD: /usr/bin/virsh
     EOF
     ```
+* if domain OS is RHEL 9 or 10 (maybe applies to others), in the domain OS, edit /etc/sysconfig/qemu-ga and add guest-exec,guest-exec-status to the list of allowed rpcs in the FILTER_RPC_ARGS configuration parameter. This will allow to execute some items to get OS boottime. If security is a concern, do not change configuration and let this items fail.
 
 * reboot zabbix-agent service
     ```sh
