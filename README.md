@@ -105,25 +105,25 @@ Tested on:
 |Hypervisor memory cached|<p> </p>|`Dependent`|libvirt.hv.memory.cached|
 |Hypervisor memory free|<p>Physical free memory on the host.</p>|`Dependent`|libvirt.hv.memory.free|
 |Hypervisor network: muticast packets|<p> </p>|`Dependent`|libvirt.hv.net.multicast|
-|Hypervisor network: Bytes received|<p> </p>|`Dependent`|libvirt.hv.net.rx_bytes|
-|Hypervisor network: Inbound packets discarded|<p> </p>|`Dependent`|libvirt.hv.net.rx_dropped|
-|Hypervisor network: Inbound packets with errors|<p> </p>|`Dependent`|libvirt.hv.net.rx_errors|
-|Hypervisor network: Inbound packets|<p> </p>|`Dependent`|libvirt.hv.net.rx_packets|
-|Hypervisor network: Bytes sent|<p> </p>|`Dependent`|libvirt.hv.net.tx_bytes|
-|Hypervisor network: Outbound packets discarded|<p> </p>|`Dependent`|libvirt.hv.net.tx_dropped|
-|Hypervisor network: Outbound packets with errors|<p> </p>|`Dependent`|libvirt.hv.net.tx_errors|
-|Hypervisor network: Outbound packets|<p> </p>|`Dependent`|libvirt.hv.net.tx_packets|
+|Hypervisor network: Bytes received|<p>Acumulated bytes received by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.rx_bytes|
+|Hypervisor network: Inbound packets discarded|<p>Acumulated packets discarded when a device's reception buffers are full</p>|`Dependent`|libvirt.hv.net.rx_dropped|
+|Hypervisor network: Inbound packets with errors|<p>Acumulated packets received with errors by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.rx_errors|
+|Hypervisor network: Inbound packets|<p>Acumulated packets received by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.rx_packets|
+|Hypervisor network: Bytes sent|<p>Acumulated bytes sent by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.tx_bytes|
+|Hypervisor network: Outbound packets discarded|<p>Acumulated packets discarded when a device's transmission buffers are full.</p>|`Dependent`|libvirt.hv.net.tx_dropped|
+|Hypervisor network: Outbound packets with errors|<p>Acumulated packets sent with errors by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.tx_errors|
+|Hypervisor network: Outbound packets|<p>Acumulated packets sent by all network devices used as source by domains.</p>|`Dependent`|libvirt.hv.net.tx_packets|
 |Hypervisor version|<p>The Running QEMU version.</p>|`Dependent`|libvirt.hv.version|
 |Hypervisor Uptime|<p>System uptime.</p>|`Zabbix agent`|libvirt.hv[uptime]|
 |Hypervisor number of guest VMs|<p> </p>|`Zabbix agent`|libvirt.hv[vmnum]|
-|HV: Get KSM data|<p> </p>|`Zabbix agent`|libvirt.hv[ksm.get]|
-|HV: Get network data|<p> </p>|`Zabbix agent`|libvirt.hv[net.stats.get]|
-|HV: Get CPU data|<p> </p>|`Zabbix agent`|libvirt.hv[nodecpu.stats.get]|
-|HV: Get node Info|<p> </p>|`Zabbix agent`|libvirt.hv[nodeinfo.get]|
-|HV: Get memory data|<p> </p>|`Zabbix agent`|libvirt.hv[nodemem.stats.get]|
-|HV: Get pool data|<p> </p>|`Zabbix agent`|libvirt.hv[pool.stats.get]|
-|HV: Get system Info|<p> </p>|`Zabbix agent`|libvirt.hv[sysinfo.get]|
-|HV: Get libvirt version data|<p> </p>|`Zabbix agent`|libvirt.hv[version.get]|
+|HV: Get KSM data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[ksm.get]|
+|HV: Get network data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[net.stats.get]|
+|HV: Get CPU data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[nodecpu.stats.get]|
+|HV: Get node Info|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[nodeinfo.get]|
+|HV: Get memory data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[nodemem.stats.get]|
+|HV: Get pool data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[pool.stats.get]|
+|HV: Get system Info|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[sysinfo.get]|
+|HV: Get libvirt version data|<p>Raw data getter</p>|`Zabbix agent`|libvirt.hv[version.get]|
 
 ## Triggers
 
