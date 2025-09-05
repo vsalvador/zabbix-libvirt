@@ -154,60 +154,52 @@ Tested on:
 |Name|Description|Type|Key and additional info|
 |----|-----------|----|----|
 |Hypervisor ping|<p>Hypervisor ping.</p>|`Simple check`|icmpping[]<p>Update: 2m</p>|
+|VM CPU haltpoll fail time|<p> </p>|`Dependent`|libvirt.vm.cpu.haltpoll.fail|
+|VM CPU haltpoll success time|<p> </p>|`Dependent`|libvirt.vm.cpu.haltpoll.success|
+|VM CPU system|<p> </p>|`Dependent`|libvirt.vm.cpu.system|
+|VM CPU usage|<p> </p>|`Dependent`|libvirt.vm.cpu.usage|
+|VM CPU usage in percent|<p> </p>|`Calculated`|libvirt.vm.cpu.usage.perf|
+|VM CPU user|<p> </p>|`Dependent`|libvirt.vm.cpu.user|
+|Guest balloon memory available|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.available|
+|Guest balloon memory disk cache|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.diskcache|
+|Guest balloon memory swapped|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.swapped|
+|Guest balloon memory unused|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.unused|
+|Guest balloon memory usable|<p> </p>|`Dependent`|libvirt.vm.guest.memory.size.usable|
+|Guest balloon memory current size|<p> </p>|`Dependent`|libvirt.vm.guest.memory.current|
+|Host balloon memory rss|<p> </p>|`Dependent`|libvirt.vm.memory.size.usage.host|
+|VM Guest Tools status|<p> </p>|`Zabbix agent`|libvirt.vm[tools, {$HV.USER},{$LIBVIRT.VM.UUID}]|
+|Snapshot count|<p> </p>|`Dependent`|libvirt.vm.snapshot.count|
+|Snapshot latest date|<p> </p>|`Dependent`|libvirt.vm.snapshot.latestdate|
+|Snapshot oldest date|<p> </p>|`Dependent`|libvirt.vm.snapshot.oldestdate|
+|Uptime of guest OS|<p> </p>|`Zabbix agent`|libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Uptime|<p> </p>|`Zabbix agent`|libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM state|<p> </p>|`Zabbix agent`|libvirt.vm[state,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Get block stats|<p> </p>|`Zabbix agent`|libvirt.vm[blk.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Number of virtual CPUs|<p> </p>|`Zabbix agent`|libvirt.vm[cpu.num, {$HV.USER},{$LIBVIRT.VM.UUID}]|
+|Guest OS memory available in %|<p> </p>|`Zabbix agent`|vm.memory.size[pavailable]|
+|Guest OS memory used in %|<p> </p>|`Zabbix agent`|vm.memory.utilization|
+|VM Get domain stats|<p> </p>|`Zabbix agent`|libvirt.vm[dom.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM domain display|<p> </p>|`Zabbix agent`|libvirt.vm[domdisplay,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM host name|<p> </p>|`Zabbix agent`|libvirt.vm[domhostname,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Get filesystem stats|<p> </p>|`Zabbix agent`|libvirt.vm[fs.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Get network stats|<p> </p>|`Zabbix agent`|libvirt.vm[net.stats.get,{$HV.USER},{$LIBVIRT.VM.UUID}]|
+|VM Get snapshots|<p> </p>|`Zabbix agent`|libvirt.vm[snapshot.get, {$HV.USER},{$LIBVIRT.VM.UUID}]|
 
-<!---
+## Triggers
 
-## Template links
-
-|Name|
-|----|
-| |
+|Name|Description|Expression|Priority|
+|----|-----------|----------|--------|
+|Domain control != "ok"|<p>-</p>|<p>**Expression**: last(/Libvirt KVM Guest/libvirt.vm[domcontrol,{$HV.USER},{$LIBVIRT.VM.UUID}]) <> "ok"</p><p>**Recovery expression**: </p>|warning|
+|QEMU Tools is not running|<p>-</p>|<p>**Expression**: last(/Libvirt KVM Guest/libvirt.vm[tools, {$HV.USER},{$LIBVIRT.VM.UUID}]) = 1</p><p>**Recovery expression**: </p>|warning|
+|VM has been rebooted|<p>-</p>|<p>**Expression**: last(/Libvirt KVM Guest/libvirt.vm[guest.uptime,{$HV.USER},{$LIBVIRT.VM.UUID}])&lt;600</p><p>**Recovery expression**: </p>|notice|
+|VM has been restarted|<p>-</p>|<p>**Expression**: last(/Libvirt KVM Guest/libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}])&lt;600</p><p>**Recovery expression**: </p>|warning|
+|VM is not running|<p>-</p>|<p>**Expression**: last(/Libvirt KVM Guest/libvirt.vm[state,{$HV.USER},{$LIBVIRT.VM.UUID}]) &lt;> "running"</p><p>**Recovery expression**: </p>|average|
+|Snapshots count > 10|<p>-</p>|<p>**Expression**: last(/Libvirt KVM Guest/libvirt.vm.snapshot.count)>10</p><p>**Recovery expression**: </p>|notice|
 
 ## Discovery rules
 
 |Name|Description|Type|Key and additional info|
 |----|-----------|----|----|
-|Network device discovery|<p>Discovery of all network devices.</p>|`Simple check`|libvirt.vm.net.if.discovery[{$URL},{HOST.HOST}]<p>Update: 1h</p>|
-|Disk device discovery|<p>Discovery of all disk devices.</p>|`Simple check`|libvirt.vm.vfs.dev.discovery[{$URL},{HOST.HOST}]<p>Update: 1h</p>|
-|Mounted filesystem discovery|<p>Discovery of all guest file systems.</p>|`Simple check`|libvirt.vm.vfs.fs.discovery[{$URL},{HOST.HOST}]<p>Update: 1h</p>|
-
-## Items collected
-
-
-|Name|Description|Type|Key and additional info|
-|----|-----------|----|----|
-|Cluster name|<p>Cluster name of the guest VM.</p>|`Simple check`|libvirt.vm.cluster.name[{$URL},{HOST.HOST}]<p>Update: 1h</p>|
-|Swapped memory|<p>The amount of guest physical memory swapped out to the VM's swap device by ESX.</p>|`Simple check`|libvirt.vm.memory.size.swapped[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Unshared storage space|<p>Total storage space, in bytes, occupied by the virtual machine across all datastores, that is not shared with any other virtual machine.</p>|`Simple check`|libvirt.vm.storage.unshared[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Uncommitted storage space|<p>Additional storage space, in bytes, potentially used by this virtual machine on all datastores.</p>|`Simple check`|libvirt.vm.storage.uncommitted[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Committed storage space|<p>Total storage space, in bytes, committed to this virtual machine across all datastores.</p>|`Simple check`|libvirt.vm.storage.committed[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Power state|<p>The current power state of the virtual machine.</p>|`Simple check`|libvirt.vm.powerstate[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Memory size|<p>Total size of configured memory.</p>|`Simple check`|vmware.vm.memory.size[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Host memory usage|<p>The amount of host physical memory allocated to the VM, accounting for saving from memory sharing with other VMs.</p>|`Simple check`|vmware.vm.memory.size.usage.host[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Guest memory usage|<p>The amount of guest physical memory that is being used by the VM.</p>|`Simple check`|vmware.vm.memory.size.usage.guest[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Shared memory|<p>The amount of guest physical memory shared through transparent page sharing.</p>|`Simple check`|vmware.vm.memory.size.shared[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Number of virtual CPUs|<p>Number of virtual CPUs assigned to the guest.</p>|`Simple check`|vmware.vm.cpu.num[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Private memory|<p>Amount of memory backed by host memory and not being shared.</p>|`Simple check`|vmware.vm.memory.size.private[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Compressed memory|<p>The amount of memory currently in the compression cache for this VM.</p>|`Simple check`|vmware.vm.memory.size.compressed[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Ballooned memory|<p>The amount of guest physical memory that is currently reclaimed through the balloon driver.</p>|`Simple check`|vmware.vm.memory.size.ballooned[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Hypervisor name|<p>Hypervisor name of the guest VM.</p>|`Simple check`|libvirt.vm.hv.name[{$URL},{HOST.HOST}]<p>Update: 1h</p>|
-|Datacenter name|<p>Datacenter name of the guest VM.</p>|`Simple check`|libvirt.vm.datacenter.name[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|CPU usage|<p>Current upper-bound on CPU usage. The upper-bound is based on the host the virtual machine is current running on, as well as limits configured on the virtual machine itself or any parent resource pool. Valid while the virtual machine is running.</p>|`Simple check`|libvirt.vm.cpu.usage[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|CPU ready|<p>Time that the virtual machine was ready, but could not get scheduled to run on the physical CPU during last measurement interval (libvirt vCenter/ESXi Server performance counter sampling interval - 20 seconds)</p>|`Simple check`|libvirt.vm.cpu.ready[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Uptime|<p>System uptime.</p>|`Simple check`|libvirt.vm.uptime[{$URL},{HOST.HOST}]<p>Update: 1m</p>|
-|Number of bytes received on interface {#IFDESC}|<p>-</p>|`Simple check`|libvirt.vm.net.if.in[{$URL},{HOST.HOST},{#IFNAME},bps]<p>Update: 1m</p><p>LLD</p>|
-|Number of packets received on interface {#IFDESC}|<p>-</p>|`Simple check`|libvirt.vm.net.if.in[{$URL},{HOST.HOST},{#IFNAME},pps]<p>Update: 1m</p><p>LLD</p>|
-|Number of bytes transmitted on interface {#IFDESC}|<p>-</p>|`Simple check`|libvirt.vm.net.if.out[{$URL},{HOST.HOST},{#IFNAME},bps]<p>Update: 1m</p><p>LLD</p>|
-|Number of packets transmitted on interface {#IFDESC}|<p>-</p>|`Simple check`|libvirt.vm.net.if.out[{$URL},{HOST.HOST},{#IFNAME},pps]<p>Update: 1m</p><p>LLD</p>|
-|Average number of bytes read from the disk {#DISKDESC}|<p>-</p>|`Simple check`|libvirt.vm.vfs.dev.read[{$URL},{HOST.HOST},{#DISKNAME},bps]<p>Update: 1m</p><p>LLD</p>|
-|Average number of reads from the disk {#DISKDESC}|<p>-</p>|`Simple check`|libvirt.vm.vfs.dev.read[{$URL},{HOST.HOST},{#DISKNAME},ops]<p>Update: 1m</p><p>LLD</p>|
-|Average number of bytes written to the disk {#DISKDESC}|<p>-</p>|`Simple check`|libvirt.vm.vfs.dev.write[{$URL},{HOST.HOST},{#DISKNAME},bps]<p>Update: 1m</p><p>LLD</p>|
-|Average number of writes to the disk {#DISKDESC}|<p>-</p>|`Simple check`|libvirt.vm.vfs.dev.write[{$URL},{HOST.HOST},{#DISKNAME},ops]<p>Update: 1m</p><p>LLD</p>|
-|Free disk space on {#FSNAME}|<p>-</p>|`Simple check`|libvirt.vm.vfs.fs.size[{$URL},{HOST.HOST},{#FSNAME},free]<p>Update: 1m</p><p>LLD</p>|
-|Free disk space on {#FSNAME} (percentage)|<p>-</p>|`Simple check`|libvirt.vm.vfs.fs.size[{$URL},{HOST.HOST},{#FSNAME},pfree]<p>Update: 1m</p><p>LLD</p>|
-|Total disk space on {#FSNAME}|<p>-</p>|`Simple check`|libvirt.vm.vfs.fs.size[{$URL},{HOST.HOST},{#FSNAME},total]<p>Update: 1h</p><p>LLD</p>|
-|Used disk space on {#FSNAME}|<p>-</p>|`Simple check`|libvirt.vm.vfs.fs.size[{$URL},{HOST.HOST},{#FSNAME},used]<p>Update: 1m</p><p>LLD</p>|
-
-## Triggers
-
--->
+|Disk device/block discovery|<p>Discovery of all disk devices.</p>|`Dependent`|libvirt.vm.blk.discovery|
+|Network device discovery|<p>Discovery of all network devices.</p>|`Dependent`|libvirt.vm.net.if.discovery|
+|Mounted filesystem discovery|<p>Discovery of all guest file systems.</p>|`Dependent`|libvirt.vm.fs.discovery|
