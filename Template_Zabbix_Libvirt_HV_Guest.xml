@@ -290,10 +290,10 @@ To use this template as manually linked to a host:
                 </item>
                 <item>
                     <uuid>cc69148570c24242b600c43f980222d8</uuid>
-                    <name>Hypervisor CPU vCores</name>
+                    <name>Hypervisor CPU threads</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.hv.cpu.vnum</key>
-                    <description>Number of physical CPU cores on the host. Physical CPU cores are the processors contained by a CPU package.</description>
+                    <description>Total number of cpu threads. Represents the shown cores at the OS level.</description>
                     <preprocessing>
                         <step>
                             <type>REGEX</type>
@@ -866,7 +866,7 @@ A high pages_sharing/pages_shared ratio signifies that most of the identified sh
                 </item>
                 <item>
                     <uuid>64a1d67054794f7aa933bf380823f48b</uuid>
-                    <name>Hypervisor network: Inbound packets with errors</name>
+                    <name>Hypervisor network: Inbound packets</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.hv.net.rx_packets</key>
                     <units>pps</units>
@@ -1238,7 +1238,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                             </condition>
                             <condition>
                                 <macro>{#VM.PERSISTENT}</macro>
-                                <value>{$LIBVIRT.VM.PERSISTEMT}</value>
+                                <value>{$LIBVIRT.VM.PERSISTENT}</value>
                             </condition>
                         </conditions>
                     </filter>
@@ -1282,7 +1282,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                 </discovery_rule>
                 <discovery_rule>
                     <uuid>279700a611624e098d61e259e1169f24</uuid>
-                    <name>Network interface discovery</name>
+                    <name>Network device discovery</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.net.if.discovery</key>
                     <description>Discovery hypervisor network interfaces.</description>
@@ -1604,7 +1604,7 @@ The maximum possible pages_sharing/pages_shared ratio is limited by the max_page
                     <description>Filter only domains with autostart enabled or all</description>
                 </macro>
                 <macro>
-                    <macro>{$LIBVIRT.VM.PERSISTEMT}</macro>
+                    <macro>{$LIBVIRT.VM.PERSISTENT}</macro>
                     <value>yes|no</value>
                     <description>Filter only persistent domains</description>
                 </macro>
@@ -2952,17 +2952,23 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>2f43c5ae73824d47af62f3e0049a62cc</uuid>
-                    <name>Guest memory available</name>
+                    <name>Guest balloon memory available</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.guest.memory.size.available</key>
                     <units>B</units>
-                    <description>Amount of guest physical memory available to the guest</description>
+                    <description>The amount of memory that is available for allocation by the domain's OS</description>
                     <preprocessing>
                         <step>
                             <type>REGEX</type>
                             <parameters>
                                 <parameter>\s*balloon.available=(\d+)</parameter>
                                 <parameter>\1</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <parameters>
+                                <parameter>1024</parameter>
                             </parameters>
                         </step>
                         <step>
@@ -2984,7 +2990,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>8eb33658051f40659224a194e6c65824</uuid>
-                    <name>Guest memory disk cache</name>
+                    <name>Guest balloon memory disk cache</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.guest.memory.size.diskcache</key>
                     <units>B</units>
@@ -2995,6 +3001,12 @@ Polling provides a latency advantage in cases where the guest can be run again v
                             <parameters>
                                 <parameter>\s*balloon.disk_caches=(\d+)</parameter>
                                 <parameter>\1</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <parameters>
+                                <parameter>1024</parameter>
                             </parameters>
                         </step>
                         <step>
@@ -3016,11 +3028,11 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>6502fe0c8fb3437fa39c332d23423dd1</uuid>
-                    <name>Guest memory swapped</name>
+                    <name>Guest balloon memory swapped</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.guest.memory.size.swapped</key>
                     <units>B</units>
-                    <description>Amount of guest physical memory that is swapped out to the swap space.</description>
+                    <description>The number of times pages have been swapped out of the domain's memory to swap space</description>
                     <preprocessing>
                         <step>
                             <type>REGEX</type>
@@ -3047,8 +3059,46 @@ Polling provides a latency advantage in cases where the guest can be run again v
                     </tags>
                 </item>
                 <item>
+                    <uuid>f2ef572208194971a83807bad16eb715</uuid>
+                    <name>Guest balloon memory unused</name>
+                    <type>DEPENDENT</type>
+                    <key>libvirt.vm.guest.memory.size.unused</key>
+                    <units>B</units>
+                    <description>The amount of memory in the domain that is not currently occupied</description>
+                    <preprocessing>
+                        <step>
+                            <type>REGEX</type>
+                            <parameters>
+                                <parameter>\s*balloon.unused=(\d+)</parameter>
+                                <parameter>\1</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <parameters>
+                                <parameter>1024</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>3h</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>libvirt.vm[dom.stat.get,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
                     <uuid>3018844a881f412dbc68204d3f65ad8c</uuid>
-                    <name>Guest memory usable</name>
+                    <name>Guest balloon memory usable</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.guest.memory.size.usable</key>
                     <units>B</units>
@@ -3080,7 +3130,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>9c367f98506c4c06896ab5506849808e</uuid>
-                    <name>Guest memory current size</name>
+                    <name>Guest balloon memory current size</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.memory.current</key>
                     <units>B</units>
@@ -3091,6 +3141,12 @@ Polling provides a latency advantage in cases where the guest can be run again v
                             <parameters>
                                 <parameter>\s*balloon.current=(\d+)</parameter>
                                 <parameter>\1</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <parameters>
+                                <parameter>1024</parameter>
                             </parameters>
                         </step>
                         <step>
@@ -3112,17 +3168,23 @@ Polling provides a latency advantage in cases where the guest can be run again v
                 </item>
                 <item>
                     <uuid>cf24d231629748dea14d603f547fec53</uuid>
-                    <name>Host memory usage</name>
+                    <name>Host balloon memory rss</name>
                     <type>DEPENDENT</type>
                     <key>libvirt.vm.memory.size.usage.host</key>
                     <units>B</units>
-                    <description>The amount of host physical RSS memory allocated to the VM.</description>
+                    <description>The Resident Set Size, representing the memory in Kibibytes that is actually in physical memory</description>
                     <preprocessing>
                         <step>
                             <type>REGEX</type>
                             <parameters>
                                 <parameter>\s*balloon.rss=(\d+)</parameter>
                                 <parameter>\1</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <parameters>
+                                <parameter>1024</parameter>
                             </parameters>
                         </step>
                         <step>
@@ -3605,6 +3667,47 @@ Polling provides a latency advantage in cases where the guest can be run again v
                             </tags>
                         </trigger>
                     </triggers>
+                </item>
+                <item>
+                    <uuid>cec2ade6739a4180b1fa5c3530d55fd5</uuid>
+                    <name>Guest OS memory available in %</name>
+                    <key>vm.memory.size[pavailable]</key>
+                    <delay>10m</delay>
+                    <units>%</units>
+                    <description>The available memory as percentage of the total. See also Appendixes in Zabbix Documentation about parameters of the `vm.memory.size` item.
+
+Se use this, only to guet internal Guest OS Statistics about real memory usage</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>0c53b21e14b847e29ddc8eee5a07e68f</uuid>
+                    <name>Guest OS memory used in %</name>
+                    <type>DEPENDENT</type>
+                    <key>vm.memory.utilization</key>
+                    <units>%</units>
+                    <description>The percentage of used memory is calculated as `100-pavailable`.</description>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>return (100-value);</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>vm.memory.size[pavailable]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
                 </item>
             </items>
             <discovery_rules>
@@ -4494,6 +4597,16 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             </value>
                                         </field>
                                         <field>
+                                            <type>STRING</type>
+                                            <name>max</name>
+                                            <value>100</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>min</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
                                             <type>INTEGER</type>
                                             <name>scale_size</name>
                                             <value>10</value>
@@ -4676,50 +4789,6 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                 </widget>
                                 <widget>
                                     <type>item</type>
-                                    <name>Committed storage space</name>
-                                    <y>10</y>
-                                    <width>15</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
                                     <name>Memory size</name>
                                     <x>15</x>
                                     <y>8</y>
@@ -4767,51 +4836,6 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                     </fields>
                                 </widget>
                                 <widget>
-                                    <type>item</type>
-                                    <name>Uncommitted storage space</name>
-                                    <x>15</x>
-                                    <y>10</y>
-                                    <width>15</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
                                     <type>gauge</type>
                                     <name>Host memory usage</name>
                                     <x>21</x>
@@ -4832,6 +4856,24 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         <field>
                                             <type>INTEGER</type>
                                             <name>desc_v_pos</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.0</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>vm.memory.utilization</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>max</name>
+                                            <value>100</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>min</name>
                                             <value>0</value>
                                         </field>
                                         <field>
@@ -4888,7 +4930,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                 </widget>
                                 <widget>
                                     <type>item</type>
-                                    <name>Libvirt Tools version</name>
+                                    <name>Snapshot count</name>
                                     <x>30</x>
                                     <y>8</y>
                                     <width>12</width>
@@ -4896,34 +4938,9 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                     <fields>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
+                                            <name>decimal_places</name>
                                             <value>0</value>
                                         </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Uptime</name>
-                                    <x>30</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
                                         <field>
                                             <type>INTEGER</type>
                                             <name>desc_v_pos</name>
@@ -4934,7 +4951,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
+                                                <key>libvirt.vm.snapshot.count</key>
                                             </value>
                                         </field>
                                         <field>
@@ -4946,6 +4963,11 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <type>INTEGER</type>
                                             <name>show.1</name>
                                             <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show.2</name>
+                                            <value>4</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5189,7 +5211,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                 </widget>
                                 <widget>
                                     <type>item</type>
-                                    <name>Datacenter name</name>
+                                    <name>Uptime</name>
                                     <x>42</x>
                                     <y>6</y>
                                     <width>30</width>
@@ -5201,76 +5223,11 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <value>0</value>
                                         </field>
                                         <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Hypervisor name</name>
-                                    <x>42</x>
-                                    <y>8</y>
-                                    <width>30</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Snapshot count</name>
-                                    <x>42</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_places</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
                                             <type>ITEM</type>
                                             <name>itemid.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.snapshot.count</key>
+                                                <key>libvirt.vm[uptime,{$HV.USER},{$LIBVIRT.VM.UUID}]</key>
                                             </value>
                                         </field>
                                         <field>
@@ -5285,11 +5242,6 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
                                             <name>value_bold</name>
                                             <value>0</value>
                                         </field>
@@ -5298,9 +5250,9 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                 <widget>
                                     <type>item</type>
                                     <name>Snapshot latest date</name>
-                                    <x>54</x>
-                                    <y>10</y>
-                                    <width>18</width>
+                                    <x>42</x>
+                                    <y>8</y>
+                                    <width>30</width>
                                     <hide_header>YES</hide_header>
                                     <fields>
                                         <field>
@@ -5401,7 +5353,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                 </widget>
                                 <widget>
                                     <type>svggraph</type>
-                                    <name>CPU latency</name>
+                                    <name>CPU</name>
                                     <y>6</y>
                                     <width>51</width>
                                     <height>6</height>
@@ -5409,7 +5361,12 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>00BFFF</value>
+                                            <value>FFD54F</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>ds.0.color.1</name>
+                                            <value>0EC9AC</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5417,44 +5374,25 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <value>0</value>
                                         </field>
                                         <field>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>libvirt.vm.cpu.system</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.1</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>libvirt.vm.cpu.user</key>
+                                            </value>
+                                        </field>
+                                        <field>
                                             <type>INTEGER</type>
                                             <name>ds.0.transparency</name>
                                             <value>6</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>ds.1.color.0</name>
-                                            <value>CE93D8</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.dataset_type</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.1.transparency</name>
-                                            <value>6</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>ds.2.color.0</name>
-                                            <value>FF4000</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.2.dataset_type</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.2.transparency</name>
-                                            <value>6</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5470,6 +5408,11 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <type>STRING</type>
                                             <name>reference</name>
                                             <value>AAAAE</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>righty</name>
+                                            <value>0</value>
                                         </field>
                                     </fields>
                                 </widget>
@@ -5532,6 +5475,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <type>INTEGER</type>
                                             <name>desc_v_pos</name>
                                             <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.0</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>libvirt.vm.cpu.usage.perf</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5613,141 +5564,6 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                     </fields>
                                 </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>CPU latency in percents</name>
-                                    <x>51</x>
-                                    <y>6</y>
-                                    <width>21</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>CPU readiness latency in percent</name>
-                                    <x>51</x>
-                                    <y>8</y>
-                                    <width>21</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>CPU readiness latency in percent</name>
-                                    <x>51</x>
-                                    <y>10</y>
-                                    <width>21</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
                             </widgets>
                         </page>
                         <page>
@@ -5755,14 +5571,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                             <widgets>
                                 <widget>
                                     <type>svggraph</type>
-                                    <name>Host memory usage in percent</name>
+                                    <name>Host OS memory usage in percent</name>
                                     <width>51</width>
                                     <height>4</height>
                                     <fields>
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>EF9A9A</value>
+                                            <value>0EC9AC</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5773,6 +5589,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <type>INTEGER</type>
                                             <name>ds.0.fill</name>
                                             <value>4</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>vm.memory.utilization</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5786,11 +5610,6 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
                                             <name>legend_statistic</name>
                                             <value>1</value>
                                         </field>
@@ -5799,11 +5618,16 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <name>reference</name>
                                             <value>AAAAF</value>
                                         </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>righty</name>
+                                            <value>0</value>
+                                        </field>
                                     </fields>
                                 </widget>
                                 <widget>
                                     <type>svggraph</type>
-                                    <name>Host memory usage</name>
+                                    <name>Host baloon memory unused</name>
                                     <y>4</y>
                                     <width>51</width>
                                     <height>6</height>
@@ -5811,7 +5635,7 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.0.color.0</name>
-                                            <value>F06292</value>
+                                            <value>FFD54F</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5820,13 +5644,31 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
+                                            <name>ds.0.fill</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>ds.0.itemids.0</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>libvirt.vm.guest.memory.size.unused</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
                                             <name>ds.0.transparency</name>
-                                            <value>3</value>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>ds.0.width</name>
+                                            <value>2</value>
                                         </field>
                                         <field>
                                             <type>STRING</type>
                                             <name>ds.1.color.0</name>
-                                            <value>BF00FF</value>
+                                            <value>90CAF9</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5835,22 +5677,12 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>ds.1.transparency</name>
-                                            <value>3</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>ds.2.color.0</name>
-                                            <value>90CAF9</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>ds.2.dataset_type</name>
-                                            <value>0</value>
+                                            <name>ds.1.fill</name>
+                                            <value>1</value>
                                         </field>
                                         <field>
                                             <type>ITEM</type>
-                                            <name>ds.2.itemids.0</name>
+                                            <name>ds.1.itemids.0</name>
                                             <value>
                                                 <host>Libvirt KVM Guest</host>
                                                 <key>libvirt.vm.memory.size.usage.host</key>
@@ -5858,13 +5690,13 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>ds.2.transparency</name>
-                                            <value>3</value>
+                                            <name>ds.1.transparency</name>
+                                            <value>1</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>legend_columns</name>
-                                            <value>1</value>
+                                            <name>ds.1.width</name>
+                                            <value>2</value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -5881,236 +5713,9 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <name>reference</name>
                                             <value>AAAAG</value>
                                         </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Guest memory swapped</name>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
                                         <field>
                                             <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>ITEM</type>
-                                            <name>itemid.0</name>
-                                            <value>
-                                                <host>Libvirt KVM Guest</host>
-                                                <key>libvirt.vm.guest.memory.size.swapped</key>
-                                            </value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Swapped memory</name>
-                                    <x>12</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Private memory</name>
-                                    <x>24</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Shared memory</name>
-                                    <x>36</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Ballooned memory</name>
-                                    <x>48</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
+                                            <name>righty</name>
                                             <value>0</value>
                                         </field>
                                     </fields>
@@ -6180,10 +5785,11 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                 </widget>
                                 <widget>
                                     <type>item</type>
-                                    <name>Guest memory usage</name>
+                                    <name>Guest memory swapped</name>
                                     <x>51</x>
                                     <y>4</y>
-                                    <width>21</width>
+                                    <width>20</width>
+                                    <height>3</height>
                                     <hide_header>YES</hide_header>
                                     <fields>
                                         <field>
@@ -6197,49 +5803,12 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                             <value>0</value>
                                         </field>
                                         <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Host memory consumed</name>
-                                    <x>51</x>
-                                    <y>6</y>
-                                    <width>21</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
+                                            <type>ITEM</type>
+                                            <name>itemid.0</name>
+                                            <value>
+                                                <host>Libvirt KVM Guest</host>
+                                                <key>libvirt.vm.guest.memory.size.swapped</key>
+                                            </value>
                                         </field>
                                         <field>
                                             <type>INTEGER</type>
@@ -6321,194 +5890,14 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                         </field>
                                     </fields>
                                 </widget>
-                                <widget>
-                                    <type>item</type>
-                                    <name>Compressed memory</name>
-                                    <x>60</x>
-                                    <y>10</y>
-                                    <width>12</width>
-                                    <hide_header>YES</hide_header>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>decimal_size</name>
-                                            <value>45</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>desc_v_pos</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.0</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.1</name>
-                                            <value>2</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>show.2</name>
-                                            <value>4</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>units_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>value_bold</name>
-                                            <value>0</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                            </widgets>
-                        </page>
-                        <page>
-                            <name>Libvirt: Storage</name>
-                            <widgets>
-                                <widget>
-                                    <type>graphprototype</type>
-                                    <name>Average number of bytes read from the disk</name>
-                                    <width>36</width>
-                                    <height>6</height>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>columns</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAH</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>source_type</name>
-                                            <value>3</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>graphprototype</type>
-                                    <name>Average read latency to the disk</name>
-                                    <y>6</y>
-                                    <width>36</width>
-                                    <height>6</height>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>columns</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAJ</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>source_type</name>
-                                            <value>3</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>graphprototype</type>
-                                    <name>Average number of bytes written to the disk</name>
-                                    <x>36</x>
-                                    <width>36</width>
-                                    <height>6</height>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>columns</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAK</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>source_type</name>
-                                            <value>3</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
-                                    <type>graphprototype</type>
-                                    <name>Average write latency to the disk</name>
-                                    <x>36</x>
-                                    <y>6</y>
-                                    <width>36</width>
-                                    <height>6</height>
-                                    <fields>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>columns</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAL</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>source_type</name>
-                                            <value>3</value>
-                                        </field>
-                                    </fields>
-                                </widget>
                             </widgets>
                         </page>
                         <page>
                             <name>Libvirt: Filesystem</name>
                             <widgets>
                                 <widget>
-                                    <type>honeycomb</type>
-                                    <name>Total disk space</name>
-                                    <width>36</width>
-                                    <height>6</height>
-                                    <fields>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>bg_color</name>
-                                            <value>81D4FA</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>items.0</name>
-                                            <value>Total disk space on*</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>primary_label</name>
-                                            <value>{{ITEM.NAME}.regsub(&quot;space on.\[(.*)\]&quot;, \1)}</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>primary_label_size_type</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAM</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
                                     <type>graphprototype</type>
                                     <name>Free disk space</name>
-                                    <y>6</y>
                                     <width>36</width>
                                     <height>6</height>
                                     <fields>
@@ -6538,69 +5927,9 @@ Polling provides a latency advantage in cases where the guest can be run again v
                                     </fields>
                                 </widget>
                                 <widget>
-                                    <type>honeycomb</type>
-                                    <name>Free disk space</name>
-                                    <x>36</x>
-                                    <width>36</width>
-                                    <height>6</height>
-                                    <fields>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>items.0</name>
-                                            <value>Free disk space on*(percentage)</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>primary_label</name>
-                                            <value>{{ITEM.NAME}.regsub(&quot;space on.\[(.*)\]&quot;, \1)}</value>
-                                        </field>
-                                        <field>
-                                            <type>INTEGER</type>
-                                            <name>primary_label_size_type</name>
-                                            <value>1</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>reference</name>
-                                            <value>AAAAO</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>thresholds.0.color</name>
-                                            <value>FF465C</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>thresholds.0.threshold</name>
-                                            <value>10</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>thresholds.1.color</name>
-                                            <value>FFD54F</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>thresholds.1.threshold</name>
-                                            <value>20</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>thresholds.2.color</name>
-                                            <value>0EC9AC</value>
-                                        </field>
-                                        <field>
-                                            <type>STRING</type>
-                                            <name>thresholds.2.threshold</name>
-                                            <value>30</value>
-                                        </field>
-                                    </fields>
-                                </widget>
-                                <widget>
                                     <type>graphprototype</type>
                                     <name>Free disk space (percentage)</name>
                                     <x>36</x>
-                                    <y>6</y>
                                     <width>36</width>
                                     <height>6</height>
                                     <fields>
