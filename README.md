@@ -7,6 +7,9 @@ This template set is designed for the deployment of libvirtd based KVM monitorin
 
 Inspired in the current Zabbix VMware templates, uses virsh command to get status and statistics of hypervisor. Both system and user virtual machines are identified in the host and a new host is created by the discovery rule. This zabbix host represent a virtual machine and the template "Libvirt KVM Guest" is linked automaticaly to this host.
 
+Some information can be better obtained from Linux template, but we include some memory and CPU statistics here to be able to obtain
+good dashboards without requiring external templates.
+
 Tested on:
 
 * RHEL 10.0

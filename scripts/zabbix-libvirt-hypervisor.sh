@@ -187,7 +187,8 @@ function _param {
             $VIRSH version 
         ;;
         nodeinfo.get)
-            $VIRSH nodeinfo 
+            $VIRSH nodeinfo
+            $VIRSH nodecpumap
         ;;
         nodecpu.stats.get)
             $VIRSH nodecpustats 
