@@ -2,8 +2,8 @@
 
 This template set is designed for the deployment of libvirtd based KVM monitoring.
 
-    The template "Libvirt KVM" should be linked to the host where the VM are deployed.
-    The template "Libvirt KVM Guest" is used in discovery and normally should not be manually linked to a host.
+* The template "Libvirt KVM" should be linked to the host where the VM are deployed.
+* The template "Libvirt KVM Guest" is used in discovery and normally should not be manually linked to a host.
 
 Inspired in the current Zabbix VMware templates, uses virsh command to get status and statistics of hypervisor. Both system and user virtual machines are identified in the host and a new host is created by the discovery rule. This zabbix host represent a virtual machine and the template "Libvirt KVM Guest" is linked automaticaly to this host.
 
