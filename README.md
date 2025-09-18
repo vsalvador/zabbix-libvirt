@@ -19,13 +19,21 @@ Tested on:
 
 * Vicente Salvador
 
+### Collaborators
+
+* Jeff Slapp - Agent 2 documentation
+
 ## Installation
 
 ### On monitored server (where you have kvm/libvirt)
 
 * install and configure zabbix-agent
     ```sh
-    dnf install zabbix-agent
+    dnf install -y zabbix-agent
+    ```
+    or install zabbix agent 2 if you're using this new version:
+    ```sh
+    dnf install -y zabbix-agent2 zabbix-agent2-plugin-*
     ```
 
 * install required dependencies for shell commands
@@ -36,9 +44,13 @@ Tested on:
    rpm -q libxml2 || dnf install libxml2  # xmllint
    ```
 
-* copy the file "userparameter-libvirt-hv.conf" into your zabbix include folder:
+* copy the file "userparameter-libvirt-hv.conf" into your zabbix agent include folder:
     ```sh
     cp configs/userparameter-libvirt-hv.conf /etc/zabbix/zabbix_agentd.d
+    ```
+    if you're using zabbix agent 2 place the config file into the plugins directory:
+    ```sh
+    cp configs/userparameter-libvirt-hv.conf /etc/zabbix/zabbix_agent2.d/plugins.d/
     ```
 
 * copy the support shell scripts to the zabbix folder:
