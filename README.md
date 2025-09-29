@@ -19,7 +19,7 @@ Tested on:
 
 * Vicente Salvador
 
-### Collaborators
+### Contributors
 
 * Jeff Slapp - Agent 2 documentation
 
