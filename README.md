@@ -56,9 +56,10 @@ Tested on:
 * copy the support shell scripts to the zabbix folder:
     ```sh
     cp scripts/*.sh /etc/zabbix
+    chmod ug+x /etc/zabbix/*.sh
     ```
 
-* zabbix agent runs as unprivileged zabbis user. Allows sudo this user the virsh command. Create file at /etc/sudoers.d/zabbix:
+* zabbix agent runs as unprivileged user: zabbix. Allow this user to use sudo for the virsh command. Create file at /etc/sudoers.d/zabbix:
     ```sh
     cat >/etc/sudoers.d/zabbix <EOF
     Defaults:zabbix !requiretty
