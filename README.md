@@ -17,7 +17,7 @@ Tested on:
 
 ## Authors
 
-* Vicente Salvador
+* Vicente Salvador Cubedo
 
 ### Contributors
 
