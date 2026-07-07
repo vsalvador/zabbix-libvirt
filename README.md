@@ -59,6 +59,11 @@ Tested on:
     chmod ug+x /etc/zabbix/*.sh
     ```
 
+* zabbix agent runs as unprivileges user: zabbix. Allow to access zabbix to system global statistics and VMs
+    ```sh
+    usermod -aG libvirt zabbix
+    ```
+
 * zabbix agent runs as unprivileged user: zabbix. Allow this user to use sudo for the virsh command. Create file at /etc/sudoers.d/zabbix:
     ```sh
     cat >/etc/sudoers.d/zabbix <EOF
