@@ -5,6 +5,7 @@
 #
 #  30/08/2025 - Initial version
 #  04/09/2025 - Move VM discovery to hypervisor shell
+#  07/07/2026 - Do not use sudo to access system libvirtd VMs and statistics
 #
 # Script to help collect information from Libvirt Guest Machines using virsh command
 #
@@ -12,6 +13,9 @@
 # /etc/zabbix/zabbix-agentd.d/zabbix-libvirt.conf 
 #   UserParameter=libvirt.hv[*],/etc/zabbix/zabbix-libvirt-hypervisor.sh $1 $2 $3 $4
 #   UserParameter=libvirt.vm[*],/etc/zabbix/zabbix-libvirt-guest.sh $1 $2 $3 $4
+#
+# Give zabbix user access to system libvirtd information
+# sudo usermod -aG libvirt zabbix
 #
 # Zabbix execute this shell using zabbix user. Some items requires other permisions
 # Create/Edit sudoers file at /etc/sudoers.d/zabbix with this content:
@@ -50,7 +54,8 @@ export ZABBIX_DOMAIN=$3
 export ZABBIX_OPTION=$4
 
 # If VM is a user domain and not a system domain, impersonate as the user running the VM
-export VIRSH="sudo $(which virsh)"
+export VIRSH="$(which virsh) -c qemu:///system "
+#export VIRSH="sudo $(which virsh)"
 if [ $# -ge 2 ] && [ $2 != "root" ]; then
    export VIRSH="sudo -u ${2} $(which virsh)"
 fi
