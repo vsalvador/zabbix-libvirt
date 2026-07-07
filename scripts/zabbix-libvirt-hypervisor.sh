@@ -4,6 +4,7 @@
 #  (C) Vicente Salvador vsalvador@nabutek.com
 #
 #  10/04/2025 - Split IWA metrics to zabiwa to allow shc compiler to work
+#  07/07/2026 - Do not use sudo to access system libvirtd VMs and statistics
 #
 # Script to help collect information from Libvirt hypervisor using virsh command
 #
@@ -11,7 +12,10 @@
 # /etc/zabbix/zabbix-agentd.d/zabbix-libvirt.conf 
 #   UserParameter=libvirt.hv[*],/etc/zabbix/zabbix-libvirt-hypervisor.sh $1 $2 $3 $4
 #   UserParameter=libvirt.vm[*],/etc/zabbix/zabbix-libvirt-guest.sh $1 $2 $3 $4
-
+#
+# Give zabbix user access to system libvirtd information
+# sudo usermod -aG libvirt zabbix
+#
 # Zabbix execute this shell using zabbix user. Some items requires other permisions
 # Create/Edit sudoers file at /etc/sudoers.d/zabbix with this content:
 #
@@ -51,7 +55,9 @@ export vTmpResult="/tmp/zabbix_libvirt_hv.$$.txt"
 
 export ZABBIX_COMMAND=$1
 export ZABBIX_OPTION=$3
-export VIRSH="sudo $(which virsh)"
+export VIRSH="$(which virsh) -c qemu:///system "
+#export VIRSH="sudo $(which virsh)"
+
 if [ $# -ge 2 ]; then
    export VIRSH="sudo -u ${2} $(which virsh)"
 fi
